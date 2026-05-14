@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment variables - NEVER commit these
+.env
+.env.local
+.env.production
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Temp / test scripts
+alter_db.js
+alter_oauth_db.js
+test_auth.js
+
+# OS
+.DS_Store
+Thumbs.db
