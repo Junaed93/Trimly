@@ -41,6 +41,11 @@ export const updateProfile = (data: {
   goal: string;
 }) => api.put('/auth/profile', data);
 
+export const logWeight = (data: { weight_kg: number; date: string }) => 
+  api.post('/weight', data);
+
+export const getWeightLogs = () => api.get('/weight');
+
 export const saveToken = (token: string) =>
   AsyncStorage.setItem('token', token);
 

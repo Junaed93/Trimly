@@ -35,7 +35,13 @@ export default function TabLayout() {
             )}
           </View>
         ),
-        tabBarShowLabel: false,
+        tabBarShowLabel: true,
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '600',
+          marginBottom: Platform.OS === 'ios' ? 0 : 4,
+        },
+        tabBarItemStyle: Platform.OS === 'web' ? { outlineStyle: 'none' } as any : undefined,
         tabBarActiveTintColor: theme.accent,
         tabBarInactiveTintColor: theme.textMuted,
       }}>
@@ -45,8 +51,7 @@ export default function TabLayout() {
           title: 'Home',
           tabBarIcon: ({ color, focused }) => (
             <View style={styles.iconWrapper}>
-              <Ionicons name={focused ? "home" : "home-outline"} size={24} color={color} />
-              {focused && <View style={[styles.indicator, { backgroundColor: theme.accent }]} />}
+              <Ionicons name={focused ? "home" : "home-outline"} size={26} color={color} />
             </View>
           ),
         }}
@@ -57,8 +62,7 @@ export default function TabLayout() {
           title: 'Food',
           tabBarIcon: ({ color, focused }) => (
             <View style={styles.iconWrapper}>
-              <Ionicons name={focused ? "restaurant" : "restaurant-outline"} size={24} color={color} />
-              {focused && <View style={[styles.indicator, { backgroundColor: theme.accent }]} />}
+              <Ionicons name={focused ? "restaurant" : "restaurant-outline"} size={26} color={color} />
             </View>
           ),
         }}
@@ -69,8 +73,7 @@ export default function TabLayout() {
           title: 'Calorie',
           tabBarIcon: ({ color, focused }) => (
             <View style={styles.iconWrapper}>
-              <Ionicons name={focused ? "flame" : "flame-outline"} size={24} color={color} />
-              {focused && <View style={[styles.indicator, { backgroundColor: theme.accent }]} />}
+              <Ionicons name={focused ? "flame" : "flame-outline"} size={26} color={color} />
             </View>
           ),
         }}
@@ -81,8 +84,7 @@ export default function TabLayout() {
           title: 'Profile',
           tabBarIcon: ({ color, focused }) => (
             <View style={styles.iconWrapper}>
-              <Ionicons name={focused ? "person" : "person-outline"} size={24} color={color} />
-              {focused && <View style={[styles.indicator, { backgroundColor: theme.accent }]} />}
+              <Ionicons name={focused ? "person" : "person-outline"} size={26} color={color} />
             </View>
           ),
         }}
@@ -101,14 +103,6 @@ const styles = StyleSheet.create({
   iconWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-    height: '100%',
-    paddingTop: Platform.OS === 'ios' ? 12 : 0,
-  },
-  indicator: {
-    position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 0 : -8,
-    width: 4,
-    height: 4,
-    borderRadius: 2,
+    paddingTop: Platform.OS === 'ios' ? 8 : 4,
   }
 });

@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Animated,
   Easing,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -61,6 +62,8 @@ const CircularProgress = ({ progress, size, strokeWidth, color, backgroundColor,
 export default function ProfileScreen() {
   const router = useRouter();
   const { theme, isDark, toggleTheme } = useTheme();
+  const { width } = useWindowDimensions();
+  const isMobileLayout = width < 768;
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -238,7 +241,7 @@ export default function ProfileScreen() {
               </View>
             ) : null}
 
-            <View style={styles.rowMd}>
+            <View style={{ flexDirection: isMobileLayout ? 'column' : 'row', gap: isMobileLayout ? 0 : 24 }}>
               <View style={styles.flex}>
                 <Input label="Age" value={form.age} onChangeText={(v) => setForm({ ...form, age: v })} keyboardType="numeric" icon="calendar-outline" error={formErrors.age} />
               </View>
@@ -256,7 +259,7 @@ export default function ProfileScreen() {
               </View>
             </View>
 
-            <View style={styles.rowMd}>
+            <View style={{ flexDirection: isMobileLayout ? 'column' : 'row', gap: isMobileLayout ? 0 : 24 }}>
               <View style={styles.flex}>
                 <View style={styles.unitHeader}>
                   <Text style={[styles.labelSm, { color: theme.textMuted }]}>Height</Text>
@@ -300,10 +303,10 @@ export default function ProfileScreen() {
             </View>
 
             <Text style={[styles.labelSm, { color: theme.textMuted, marginTop: 8 }]}>Fitness Goal</Text>
-            <View style={styles.goalGrid}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 32 }}>
               {GOALS.map(g => (
                 <TouchableOpacity key={g.key} onPress={() => setForm({ ...form, goal: g.key })}
-                  style={[styles.goalBtn, { backgroundColor: form.goal === g.key ? theme.accentSurface : theme.surface, borderColor: form.goal === g.key ? theme.accentBorder : theme.border }]}>
+                  style={[styles.goalBtn, { width: isMobileLayout ? '48%' : '23%', backgroundColor: form.goal === g.key ? theme.accentSurface : theme.surface, borderColor: form.goal === g.key ? theme.accentBorder : theme.border }]}>
                   <Ionicons name={g.icon} size={28} color={form.goal === g.key ? theme.accentLight : theme.textMuted} />
                   <Text style={[styles.goalLabel, { color: form.goal === g.key ? theme.accentLight : theme.textSecondary }]}>{g.label}</Text>
                   <Text style={[styles.goalDesc, { color: form.goal === g.key ? theme.accent : theme.textMuted }]}>{g.desc}</Text>
@@ -362,9 +365,9 @@ export default function ProfileScreen() {
              <Text style={[styles.title, { color: theme.text }]}>{profile?.name}</Text>
           </View>
 
-          <View style={styles.rowMd}>
+          <View style={{ flexDirection: isMobileLayout ? 'column' : 'row', gap: isMobileLayout ? 0 : 24 }}>
             {/* Main Content - Calorie Target */}
-            <View style={{ flex: 2, marginRight: Platform.OS !== 'web' ? 0 : 24, marginBottom: 24 }}>
+            <View style={{ flex: 2, marginBottom: 24 }}>
               <View style={[styles.targetCard, { backgroundColor: 'rgba(255, 255, 255, 0.1)', borderColor: 'rgba(255, 255, 255, 0.2)' }]}>
                 <View style={styles.targetHeader}>
                    <View style={[styles.iconBox, { backgroundColor: theme.accentSurface }]}>
@@ -389,7 +392,7 @@ export default function ProfileScreen() {
 
             {/* Sidebar - Body Stats */}
             <View style={{ flex: 1 }}>
-              <View style={styles.statsHeaderRow}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, marginTop: isMobileLayout ? 24 : 0 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <Ionicons name="stats-chart-outline" size={18} color={theme.accent} style={{ marginRight: 8 }} />
                     <Text style={[styles.labelSm, { color: theme.textMuted, marginTop: 0 }]}>Body Statistics</Text>
@@ -451,7 +454,7 @@ function InfoRow({ icon, label, value, theme, capitalize = false }: any) {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  scrollPad: { paddingBottom: 80, paddingHorizontal: 24, paddingTop: 32 },
+  scrollPad: { paddingBottom: 100, paddingHorizontal: 16, paddingTop: Platform.OS === 'ios' ? 44 : 24 },
   contentMax: { maxWidth: 640, width: '100%', alignSelf: 'center' },
   contentMaxLg: { maxWidth: 1024, width: '100%', alignSelf: 'center' },
   
@@ -463,7 +466,6 @@ const styles = StyleSheet.create({
   alertBanner: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, marginBottom: 20 },
   alertText: { fontSize: 14, fontWeight: '600', flex: 1 },
   
-  rowMd: { flexDirection: Platform.OS === 'web' ? 'row' : 'column', gap: Platform.OS === 'web' ? 24 : 0 },
   labelSm: { fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8, marginLeft: 4 },
   
   toggleRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
@@ -475,12 +477,11 @@ const styles = StyleSheet.create({
   unitOption: { paddingHorizontal: 12, paddingVertical: 6 },
   unitText: { fontSize: 12, fontWeight: '700' },
   
-  goalGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 32 },
-  goalBtn: { width: Platform.OS === 'web' ? '23%' : '48%', flexGrow: 1, paddingVertical: 20, borderRadius: 20, alignItems: 'center', borderWidth: 1 },
+  goalBtn: { flexGrow: 1, paddingVertical: 20, borderRadius: 20, alignItems: 'center', borderWidth: 1 },
   goalLabel: { fontWeight: '700', fontSize: 14, marginTop: 12, textAlign: 'center' },
   goalDesc: { fontSize: 12, marginTop: 4, textAlign: 'center' },
 
-  navBar: { paddingTop: Platform.OS === 'ios' ? 56 : 40, paddingBottom: 16, paddingHorizontal: 24, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1 },
+  navBar: { paddingTop: Platform.OS === 'ios' ? 56 : 40, paddingBottom: 16, paddingHorizontal: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1 },
   navBrand: { flexDirection: 'row', alignItems: 'center' },
   navTitle: { fontSize: 20, fontWeight: '800', marginLeft: 8 },
   iconBtnNav: { width: 40, height: 40, borderRadius: 12, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
@@ -494,7 +495,6 @@ const styles = StyleSheet.create({
   goalBanner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: '100%', paddingVertical: 16, borderRadius: 20 },
   goalBannerText: { fontWeight: '700', fontSize: 16 },
 
-  statsHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, marginTop: Platform.OS === 'web' ? 0 : 24 },
   editBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1 },
   editBtnText: { fontSize: 12, fontWeight: '700', textTransform: 'uppercase' },
 

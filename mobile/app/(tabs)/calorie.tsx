@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import GlassBackground from '../../components/GlassBackground';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -21,8 +21,8 @@ export default function CalorieScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
-    paddingTop: 80,
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === 'ios' ? 64 : 40,
   },
   glassCard: {
     padding: 24,
