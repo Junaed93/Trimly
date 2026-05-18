@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Platform, StyleSheet, Animated, useWindowDimensions, Keyboard, PanResponder } from 'react-native';
+import { View, Platform, StyleSheet, Animated, useWindowDimensions, Keyboard, PanResponder, TouchableOpacity } from 'react-native';
 import { Tabs } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
@@ -46,12 +46,13 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
 
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onStartShouldSetPanResponderCapture: () => true,
-      onMoveShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponderCapture: () => true,
+      onStartShouldSetPanResponder: () => false, // Let TouchableOpacity handle pure taps/clicks!
+      onStartShouldSetPanResponderCapture: () => false,
+      onMoveShouldSetPanResponder: (e, gs) => Math.abs(gs.dx) > 5, // Hijack gesture if dragging horizontally
+      onMoveShouldSetPanResponderCapture: (e, gs) => Math.abs(gs.dx) > 5,
       onPanResponderGrant: (e, gs) => {
         panX.stopAnimation();
+        // Since we hijack mid-move, gs.x0 is where the gesture started.
         let localX = gs.x0 - HORIZONTAL_PADDING;
         let newX = localX - (TAB_WIDTH / 2);
         const maxX = (state.routes.length - 1) * TAB_WIDTH;
@@ -83,15 +84,14 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
 
         const route = state.routes[targetIndex];
         
-        if (targetIndex !== state.index) {
-          navigation.navigate(route.name);
-        } else {
-          // If tapped on the already active tab
-          navigation.emit({
-            type: 'tabPress',
-            target: route.key,
-            canPreventDefault: true,
-          });
+        const event = navigation.emit({
+          type: 'tabPress',
+          target: route.key,
+          canPreventDefault: true,
+        });
+
+        if (targetIndex !== state.index && !event.defaultPrevented) {
+          navigation.navigate({ name: route.name, merge: true });
         }
       },
       onPanResponderTerminate: () => {
@@ -140,13 +140,34 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
             else if (route.name === 'calorie') iconName = isFocused ? 'flame' : 'flame-outline';
             else if (route.name === 'profile') iconName = isFocused ? 'person' : 'person-outline';
 
+            const onPress = () => {
+              const event = navigation.emit({
+                type: 'tabPress',
+                target: route.key,
+                canPreventDefault: true,
+              });
+
+              if (!isFocused && !event.defaultPrevented) {
+                navigation.navigate({ name: route.name, merge: true });
+              }
+            };
+
+            const onLongPress = () => {
+              navigation.emit({
+                type: 'tabLongPress',
+                target: route.key,
+              });
+            };
+
             return (
-              <View
+              <TouchableOpacity
                 key={route.key}
                 accessibilityRole="button"
                 accessibilityState={isFocused ? { selected: true } : {}}
                 accessibilityLabel={options.tabBarAccessibilityLabel}
                 testID={options.tabBarTestID}
+                onPress={onPress}
+                onLongPress={onLongPress}
                 style={styles.tabItem}
               >
                 <AnimatedIcon 
@@ -158,7 +179,7 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
                    activeColor={theme.accentLight} 
                    inactiveColor={theme.textMuted} 
                 />
-              </View>
+              </TouchableOpacity>
             );
           })}
         </View>
