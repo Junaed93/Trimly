@@ -82,8 +82,8 @@ export default function HomeScreen() {
   let targetWeight = 0;
 
   if (logs.length > 0) {
-    currentWeight = logs[0].weight_kg;
-    initialWeight = logs[logs.length - 1].weight_kg;
+    currentWeight = Number(logs[0].weight_kg) || 0;
+    initialWeight = Number(logs[logs.length - 1].weight_kg) || 0;
     weightLoss = initialWeight - currentWeight;
     weightLossPercentage = initialWeight > 0 ? (weightLoss / initialWeight) * 100 : 0;
     
