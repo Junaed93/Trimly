@@ -208,21 +208,22 @@ export default function FoodScreen() {
   };
 
   const renderMealSection = (meal: { key: MealKey; label: string; hint: string }) => {
-    const mealLogs = getMealLogs(meal.key);
-    const totals = getMealTotals(mealLogs);
-    const isExpanded = expandedMeal === meal.key;
-
     return (
-      <View key={meal.key} style={[styles.mealSection, { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: selectedMeal === meal.key ? theme.accentBorder : 'rgba(255,255,255,0.1)' }]}>
+      <TouchableOpacity
+        key={meal.key}
+        style={[
+          styles.mealSelectionCard,
+          {
+            backgroundColor: expandedMeal === meal.key ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.05)',
+            borderColor: expandedMeal === meal.key ? theme.accentBorder : 'rgba(255,255,255,0.1)',
+          },
+        ]}
+        onPress={() => toggleMealSection(meal.key)}
+      >
         <View style={styles.mealSectionHeader}>
-          <TouchableOpacity style={{ flex: 1, paddingRight: 12 }} onPress={() => toggleMealSection(meal.key)}>
+          <View style={{ flex: 1, paddingRight: 12 }}>
             <Text style={[styles.mealSectionTitle, { color: theme.text }]}>{meal.label}</Text>
             <Text style={[styles.mealSectionSubtitle, { color: theme.textMuted }]}>{meal.hint}</Text>
-          </TouchableOpacity>
-
-          <View style={{ alignItems: 'flex-end' }}>
-            <Text style={[styles.mealSectionTotal, { color: theme.accentLight }]}>{totals.calories} kcal</Text>
-            <Text style={[styles.mealSectionMeta, { color: theme.textMuted }]}>{mealLogs.length} items</Text>
           </View>
 
           <TouchableOpacity
@@ -233,36 +234,59 @@ export default function FoodScreen() {
           </TouchableOpacity>
         </View>
 
-        {isExpanded ? (
-          <>
-            <View style={styles.macroRow}>
-              <Text style={[styles.macroText, { color: theme.textSecondary }]}>P {totals.protein_g.toFixed(1)}g</Text>
-              <Text style={[styles.macroText, { color: theme.textSecondary }]}>C {totals.carbs_g.toFixed(1)}g</Text>
-              <Text style={[styles.macroText, { color: theme.textSecondary }]}>F {totals.fat_g.toFixed(1)}g</Text>
-            </View>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
+          <Text style={[styles.mealSectionTotal, { color: theme.accentLight }]}>{getMealTotals(getMealLogs(meal.key)).calories} kcal</Text>
+          <Text style={[styles.mealSectionMeta, { color: theme.textMuted }]}>{getMealLogs(meal.key).length} items</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
-            {mealLogs.length > 0 ? (
-              mealLogs.map((item) => (
-                <View key={item.id} style={[styles.mealItemRow, { borderBottomColor: theme.border }]}>
-                  <View style={{ flex: 1, paddingRight: 12 }}>
-                    <Text style={[styles.logName, { color: theme.text }]}>{item.foodName}</Text>
-                    <Text style={[styles.logQty, { color: theme.textMuted }]}>
-                      {item.quantity} {item.unit} • {item.time}
-                    </Text>
-                    <Text style={[styles.logMacroLine, { color: theme.textMuted }]}>
-                      P {Number(item.protein_g || 0).toFixed(1)}g · C {Number(item.carbs_g || 0).toFixed(1)}g · F {Number(item.fat_g || 0).toFixed(1)}g
-                    </Text>
-                  </View>
-                  <Text style={[styles.logCals, { color: theme.accentLight }]}>{item.calories} kcal</Text>
-                </View>
-              ))
-            ) : (
-              <View style={styles.emptyMealRow}>
-                <Text style={[styles.placeholderText, { color: theme.textMuted }]}>No items logged for {meal.label.toLowerCase()}.</Text>
+  const renderExpandedMealDetails = (mealKey: MealKey) => {
+    const meal = MEALS.find((item) => item.key === mealKey);
+    if (!meal) return null;
+
+    const mealLogs = getMealLogs(meal.key);
+    const totals = getMealTotals(mealLogs);
+
+    return (
+      <View style={[styles.mealDetailsPanel, { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: theme.accentBorder }]}>
+        <View style={styles.mealSectionHeader}>
+          <View>
+            <Text style={[styles.mealSectionTitle, { color: theme.text }]}>{meal.label}</Text>
+            <Text style={[styles.mealSectionSubtitle, { color: theme.textMuted }]}>{meal.hint}</Text>
+          </View>
+          <TouchableOpacity onPress={() => openMealLogger(meal.key)} style={[styles.mealLogBtn, { backgroundColor: theme.accentSurface, borderColor: theme.accentBorder }]}>
+            <Ionicons name="add" size={16} color={theme.accentLight} />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.macroRow}>
+          <Text style={[styles.macroText, { color: theme.textSecondary }]}>P {totals.protein_g.toFixed(1)}g</Text>
+          <Text style={[styles.macroText, { color: theme.textSecondary }]}>C {totals.carbs_g.toFixed(1)}g</Text>
+          <Text style={[styles.macroText, { color: theme.textSecondary }]}>F {totals.fat_g.toFixed(1)}g</Text>
+        </View>
+
+        {mealLogs.length > 0 ? (
+          mealLogs.map((item) => (
+            <View key={item.id} style={[styles.mealItemRow, { borderBottomColor: theme.border }]}>
+              <View style={{ flex: 1, paddingRight: 12 }}>
+                <Text style={[styles.logName, { color: theme.text }]}>{item.foodName}</Text>
+                <Text style={[styles.logQty, { color: theme.textMuted }]}>
+                  {item.quantity} {item.unit} • {item.time}
+                </Text>
+                <Text style={[styles.logMacroLine, { color: theme.textMuted }]}>
+                  P {Number(item.protein_g || 0).toFixed(1)}g · C {Number(item.carbs_g || 0).toFixed(1)}g · F {Number(item.fat_g || 0).toFixed(1)}g
+                </Text>
               </View>
-            )}
-          </>
-        ) : null}
+              <Text style={[styles.logCals, { color: theme.accentLight }]}>{item.calories} kcal</Text>
+            </View>
+          ))
+        ) : (
+          <View style={styles.emptyMealRow}>
+            <Text style={[styles.placeholderText, { color: theme.textMuted }]}>No items logged for {meal.label.toLowerCase()}.</Text>
+          </View>
+        )}
       </View>
     );
   };
@@ -295,7 +319,7 @@ export default function FoodScreen() {
         <View style={{ flex: 1, marginTop: 24 }}>
           <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>Meal Breakdown</Text>
           {todayLogs.length > 0 ? (
-            <View style={{ gap: 12 }}>
+            <View style={styles.mealBreakdownGrid}>
               {MEALS.map(renderMealSection)}
             </View>
           ) : (
@@ -304,6 +328,8 @@ export default function FoodScreen() {
               <Text style={[styles.placeholderText, { color: theme.textMuted }]}>No meals logged today yet.</Text>
             </View>
           )}
+
+          {expandedMeal ? renderExpandedMealDetails(expandedMeal) : null}
         </View>
       </ScrollView>
 
@@ -589,6 +615,18 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     marginTop: 2,
+  },
+  mealBreakdownGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginTop: 12,
+  },
+  mealDetailsPanel: {
+    borderWidth: 1,
+    borderRadius: 22,
+    padding: 16,
+    marginTop: 12,
   },
   mealItemRow: {
     flexDirection: 'row',
