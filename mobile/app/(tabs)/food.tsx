@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, Platform, FlatList, TouchableOpacity, Alert, useWindowDimensions, Modal } from 'react-native';
+import { View, Text, StyleSheet, Platform, ScrollView, FlatList, TouchableOpacity, Alert, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import GlassBackground from '../../components/GlassBackground';
@@ -9,6 +9,15 @@ import { useTheme } from '../../context/ThemeContext';
 import foodsData from '../../assets/data/foods.json';
 import { getProfile } from '../../services/api';
 import { getDailyCalories, getTodayString, logFoodItem, getDailyFoodLogs, FoodLog } from '../../services/foodStorage';
+
+type MealKey = 'breakfast' | 'lunch' | 'snacks' | 'dinner';
+
+const MEALS: { key: MealKey; label: string; hint: string }[] = [
+  { key: 'breakfast', label: 'Breakfast', hint: 'First meal of the day' },
+  { key: 'lunch', label: 'Lunch', hint: 'Midday fuel' },
+  { key: 'snacks', label: 'Snacks', hint: 'Small bites between meals' },
+  { key: 'dinner', label: 'Dinner', hint: 'Evening meal' },
+];
 
 interface FoodItem {
   id: number;
@@ -23,16 +32,17 @@ interface FoodItem {
 
 export default function FoodScreen() {
   const { theme } = useTheme();
-  const { width } = useWindowDimensions();
-  const isMobileLayout = width < 768;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [profile, setProfile] = useState<any>(null);
   const [consumedCalories, setConsumedCalories] = useState(0);
   const [todayLogs, setTodayLogs] = useState<FoodLog[]>([]);
+  const [selectedMeal, setSelectedMeal] = useState<MealKey>('breakfast');
+  const [expandedMeal, setExpandedMeal] = useState<MealKey | null>(null);
 
   // Modals Visibility
   const [searchModalVisible, setSearchModalVisible] = useState(false);
+  const [mealSelectionModalVisible, setMealSelectionModalVisible] = useState(false);
   const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
   const [quantityInput, setQuantityInput] = useState('100');
 
@@ -50,7 +60,15 @@ export default function FoodScreen() {
     const cals = await getDailyCalories(today);
     const logs = await getDailyFoodLogs(today);
     setConsumedCalories(cals);
-    setTodayLogs(logs);
+    setTodayLogs(
+      logs.map((log: any) => ({
+        ...log,
+        meal: log.meal || 'snacks',
+        protein_g: Number(log.protein_g || 0),
+        carbs_g: Number(log.carbs_g || 0),
+        fat_g: Number(log.fat_g || 0),
+      })),
+    );
   };
 
   useFocusEffect(
@@ -92,11 +110,16 @@ export default function FoodScreen() {
     }
 
     try {
+      const factor = selectedFood.serving_size.includes('100g') ? qty / 100 : qty;
       await logFoodItem(getTodayString(), {
+        meal: selectedMeal,
         foodName: selectedFood.food_name_en,
         quantity: qty,
         unit: unitLabel,
-        calories: Math.round(calculatedCalories)
+        calories: Math.round(calculatedCalories),
+        protein_g: parseFloat((selectedFood.protein_g * factor).toFixed(1)),
+        carbs_g: parseFloat((selectedFood.carbs_g * factor).toFixed(1)),
+        fat_g: parseFloat((selectedFood.fat_g * factor).toFixed(1)),
       });
       loadLogs();
       setSelectedFood(null);
@@ -114,6 +137,22 @@ export default function FoodScreen() {
 
   const totalAllowed = profile?.daily_calorie_target || 2000;
   const remaining = totalAllowed - consumedCalories;
+
+  const getMealLogs = (meal: MealKey) =>
+    todayLogs.filter((log) => ((log.meal as MealKey) || 'snacks') === meal);
+
+  const getMealTotals = (mealLogs: FoodLog[]) =>
+    mealLogs.reduce(
+      (totals, log) => ({
+        calories: totals.calories + Number(log.calories || 0),
+        protein_g: totals.protein_g + Number(log.protein_g || 0),
+        carbs_g: totals.carbs_g + Number(log.carbs_g || 0),
+        fat_g: totals.fat_g + Number(log.fat_g || 0),
+      }),
+      { calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0 },
+    );
+
+  const getMealLabel = (meal: MealKey) => MEALS.find((item) => item.key === meal)?.label || meal;
 
   // Calculate dynamic macros in detail modal
   const getCalculatedNutrition = () => {
@@ -152,9 +191,85 @@ export default function FoodScreen() {
     </View>
   );
 
+  const openMealLogger = (meal: MealKey) => {
+    setSelectedMeal(meal);
+    setSearchQuery('');
+    setMealSelectionModalVisible(false);
+    setSearchModalVisible(true);
+  };
+
+  const openMealSelection = () => {
+    setMealSelectionModalVisible(true);
+  };
+
+  const toggleMealSection = (meal: MealKey) => {
+    setSelectedMeal(meal);
+    setExpandedMeal((current) => (current === meal ? null : meal));
+  };
+
+  const renderMealSection = (meal: { key: MealKey; label: string; hint: string }) => {
+    const mealLogs = getMealLogs(meal.key);
+    const totals = getMealTotals(mealLogs);
+    const isExpanded = expandedMeal === meal.key;
+
+    return (
+      <View key={meal.key} style={[styles.mealSection, { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: selectedMeal === meal.key ? theme.accentBorder : 'rgba(255,255,255,0.1)' }]}>
+        <View style={styles.mealSectionHeader}>
+          <TouchableOpacity style={{ flex: 1, paddingRight: 12 }} onPress={() => toggleMealSection(meal.key)}>
+            <Text style={[styles.mealSectionTitle, { color: theme.text }]}>{meal.label}</Text>
+            <Text style={[styles.mealSectionSubtitle, { color: theme.textMuted }]}>{meal.hint}</Text>
+          </TouchableOpacity>
+
+          <View style={{ alignItems: 'flex-end' }}>
+            <Text style={[styles.mealSectionTotal, { color: theme.accentLight }]}>{totals.calories} kcal</Text>
+            <Text style={[styles.mealSectionMeta, { color: theme.textMuted }]}>{mealLogs.length} items</Text>
+          </View>
+
+          <TouchableOpacity
+            style={[styles.mealLogBtn, { backgroundColor: theme.accentSurface, borderColor: theme.accentBorder }]}
+            onPress={() => openMealLogger(meal.key)}
+          >
+            <Ionicons name="add" size={16} color={theme.accentLight} />
+          </TouchableOpacity>
+        </View>
+
+        {isExpanded ? (
+          <>
+            <View style={styles.macroRow}>
+              <Text style={[styles.macroText, { color: theme.textSecondary }]}>P {totals.protein_g.toFixed(1)}g</Text>
+              <Text style={[styles.macroText, { color: theme.textSecondary }]}>C {totals.carbs_g.toFixed(1)}g</Text>
+              <Text style={[styles.macroText, { color: theme.textSecondary }]}>F {totals.fat_g.toFixed(1)}g</Text>
+            </View>
+
+            {mealLogs.length > 0 ? (
+              mealLogs.map((item) => (
+                <View key={item.id} style={[styles.mealItemRow, { borderBottomColor: theme.border }]}>
+                  <View style={{ flex: 1, paddingRight: 12 }}>
+                    <Text style={[styles.logName, { color: theme.text }]}>{item.foodName}</Text>
+                    <Text style={[styles.logQty, { color: theme.textMuted }]}>
+                      {item.quantity} {item.unit} • {item.time}
+                    </Text>
+                    <Text style={[styles.logMacroLine, { color: theme.textMuted }]}>
+                      P {Number(item.protein_g || 0).toFixed(1)}g · C {Number(item.carbs_g || 0).toFixed(1)}g · F {Number(item.fat_g || 0).toFixed(1)}g
+                    </Text>
+                  </View>
+                  <Text style={[styles.logCals, { color: theme.accentLight }]}>{item.calories} kcal</Text>
+                </View>
+              ))
+            ) : (
+              <View style={styles.emptyMealRow}>
+                <Text style={[styles.placeholderText, { color: theme.textMuted }]}>No items logged for {meal.label.toLowerCase()}.</Text>
+              </View>
+            )}
+          </>
+        ) : null}
+      </View>
+    );
+  };
+
   return (
     <GlassBackground>
-      <View style={styles.container}>
+      <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
         <Text style={[styles.title, { color: theme.text }]}>Food Log</Text>
         
         {/* Calorie Summary Banner */}
@@ -166,47 +281,23 @@ export default function FoodScreen() {
                 {remaining} <Text style={{ fontSize: 16, fontWeight: '600' }}>kcal</Text>
               </Text>
             </View>
-            <View style={{ alignItems: 'flex-end' }}>
-               <Text style={[styles.summaryLabel, { color: theme.textMuted }]}>Eaten Today</Text>
-               <Text style={[styles.summaryValueSm, { color: theme.accentLight }]}>{consumedCalories} / {totalAllowed}</Text>
-            </View>
+            <TouchableOpacity
+              style={[styles.compactLogBtn, { backgroundColor: theme.accentSurface, borderColor: theme.accentBorder }]}
+              onPress={openMealSelection}
+            >
+              <Ionicons name="restaurant" size={16} color={theme.accentLight} />
+              <Text style={[styles.compactLogBtnText, { color: theme.text }]}>Log Meal</Text>
+              <Ionicons name="chevron-forward" size={16} color={theme.textMuted} />
+            </TouchableOpacity>
           </View>
         </View>
 
-        {/* Shneiderman's Golden Rule Widget: Log Food CTA */}
-        <TouchableOpacity 
-          style={[styles.widgetCard, { backgroundColor: theme.accentSurface, borderColor: theme.accentBorder }]}
-          onPress={() => setSearchModalVisible(true)}
-        >
-          <View style={[styles.widgetIconContainer, { backgroundColor: theme.accent }]}>
-            <Ionicons name="restaurant" size={24} color="#fff" />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.widgetTitle, { color: theme.text }]}>Log a Meal</Text>
-            <Text style={[styles.widgetSubtitle, { color: theme.textSecondary }]}>Search through our local dataset & log calories</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color={theme.textMuted} />
-        </TouchableOpacity>
-
-        {/* Today's Logs */}
         <View style={{ flex: 1, marginTop: 24 }}>
-          <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>Today's Logs</Text>
+          <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>Meal Breakdown</Text>
           {todayLogs.length > 0 ? (
-            <FlatList
-              data={todayLogs}
-              keyExtractor={(item) => item.id}
-              showsVerticalScrollIndicator={false}
-              renderItem={({ item, index }) => (
-                <View style={[styles.logRow, { borderBottomColor: theme.border, borderBottomWidth: index === todayLogs.length - 1 ? 0 : 1 }]}>
-                  <View>
-                    <Text style={[styles.logName, { color: theme.text }]}>{item.foodName}</Text>
-                    <Text style={[styles.logQty, { color: theme.textMuted }]}>{item.quantity} {item.unit} • {item.time}</Text>
-                  </View>
-                  <Text style={[styles.logCals, { color: theme.accentLight }]}>{item.calories} kcal</Text>
-                </View>
-              )}
-              contentContainerStyle={[styles.logContainer, { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.1)' }]}
-            />
+            <View style={{ gap: 12 }}>
+              {MEALS.map(renderMealSection)}
+            </View>
           ) : (
             <View style={styles.placeholderContainer}>
               <Ionicons name="cafe-outline" size={48} color={theme.textMuted} />
@@ -214,7 +305,41 @@ export default function FoodScreen() {
             </View>
           )}
         </View>
-      </View>
+      </ScrollView>
+
+      {/* MEAL SELECTION MODAL */}
+      <Modal visible={mealSelectionModalVisible} transparent animationType="fade">
+        <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
+          <View style={[styles.mealSelectionContent, { backgroundColor: theme.bg, borderColor: theme.border }]}>
+            <Text style={[styles.mealSelectionTitle, { color: theme.text }]}>Select a Meal</Text>
+            
+            <View style={styles.mealSelectionGrid}>
+              {MEALS.map((meal) => (
+                <TouchableOpacity
+                  key={meal.key}
+                  style={[styles.mealSelectionCard, { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: theme.border }]}
+                  onPress={() => openMealLogger(meal.key)}
+                >
+                  <Ionicons 
+                    name={meal.key === 'breakfast' ? 'cafe-outline' : meal.key === 'lunch' ? 'restaurant-outline' : meal.key === 'dinner' ? 'moon-outline' : 'fast-food-outline'} 
+                    size={32} 
+                    color={theme.accentLight} 
+                  />
+                  <Text style={[styles.mealSelectionLabel, { color: theme.text }]}>{meal.label}</Text>
+                  <Text style={[styles.mealSelectionHint, { color: theme.textMuted }]}>{meal.hint}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <TouchableOpacity
+              style={{ marginTop: 16 }}
+              onPress={() => setMealSelectionModalVisible(false)}
+            >
+              <Text style={{ color: theme.accentLight, textAlign: 'center', fontWeight: '600' }}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* SEARCH FOOD MODAL */}
       <Modal visible={searchModalVisible} transparent animationType="slide">
@@ -234,7 +359,6 @@ export default function FoodScreen() {
                 onChangeText={setSearchQuery}
                 placeholder="Type rice, egg, fish, sweet..."
                 icon="search-outline"
-                autoFocus
               />
             </View>
 
@@ -256,7 +380,7 @@ export default function FoodScreen() {
       <Modal visible={!!selectedFood} transparent animationType="fade">
         <View style={styles.modalOverlay}>
            <View style={[styles.modalContent, { backgroundColor: theme.bg, borderColor: theme.border }]}>
-              {selectedFood && (
+              {selectedFood ? (
                 <>
                   <View style={styles.modalHeader}>
                     <Text style={[styles.modalTitle, { color: theme.text, fontSize: 20 }]}>{selectedFood.food_name_en}</Text>
@@ -265,6 +389,30 @@ export default function FoodScreen() {
                     </TouchableOpacity>
                   </View>
                   <Text style={{ color: theme.textSecondary, fontSize: 13, marginTop: -4, marginBottom: 16 }}>({selectedFood.food_name_bn})</Text>
+
+                  <View style={{ marginBottom: 16 }}>
+                    <Text style={[styles.mealPickerLabel, { color: theme.textSecondary }]}>Add to meal</Text>
+                    <View style={styles.mealPickerRow}>
+                      {MEALS.map((meal) => {
+                        const active = selectedMeal === meal.key;
+                        return (
+                          <TouchableOpacity
+                            key={meal.key}
+                            style={[
+                              styles.mealPickerChip,
+                              {
+                                backgroundColor: active ? theme.accentSurface : 'rgba(255,255,255,0.04)',
+                                borderColor: active ? theme.accentBorder : theme.border,
+                              },
+                            ]}
+                            onPress={() => setSelectedMeal(meal.key)}
+                          >
+                            <Text style={{ color: active ? theme.accentLight : theme.text, fontWeight: '700' }}>{meal.label}</Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  </View>
                   
                   {/* Detailed Nutrition Summary */}
                   <View style={[styles.nutritionGrid, { borderColor: theme.border }]}>
@@ -308,7 +456,7 @@ export default function FoodScreen() {
                     <Button title="Confirm & Log" onPress={confirmLogFood} />
                   </View>
                 </>
-              )}
+              ) : null}
            </View>
         </View>
       </Modal>
@@ -329,12 +477,37 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     marginBottom: 20,
   },
+  subtitle: {
+    fontSize: 14,
+    fontWeight: '500',
+    lineHeight: 20,
+    marginBottom: 16,
+  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 1,
     marginBottom: 12,
+  },
+  mealStrip: {
+    display: 'none',
+  },
+  mealChip: {
+    flexBasis: '48%',
+    borderWidth: 1,
+    borderRadius: 18,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+  mealChipLabel: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  mealChipMeta: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 4,
   },
   summaryBanner: {
     padding: 20,
@@ -358,27 +531,16 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   widgetCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderRadius: 20,
-    borderWidth: 1,
+    display: 'none',
   },
   widgetIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 16,
+    display: 'none',
   },
   widgetTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    display: 'none',
   },
   widgetSubtitle: {
-    fontSize: 12,
-    marginTop: 2,
+    display: 'none',
   },
   placeholderContainer: {
     flex: 1,
@@ -390,6 +552,79 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginTop: 12,
+  },
+  mealSection: {
+    borderWidth: 1,
+    borderRadius: 22,
+    padding: 16,
+  },
+  mealSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  mealLogBtn: {
+    width: 30,
+    height: 30,
+    borderWidth: 1,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 10,
+  },
+  mealSectionTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  mealSectionSubtitle: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  mealSectionTotal: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  mealSectionMeta: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  mealItemRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    paddingVertical: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  compactLogBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderRadius: 999,
+    gap: 8,
+    marginBottom: 12,
+  },
+  compactLogBtnText: {
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  macroRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 12,
+  },
+  macroText: {
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  emptyMealRow: {
+    paddingVertical: 10,
   },
   foodCard: {
     flexDirection: 'row',
@@ -429,6 +664,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
   },
+  logMacroLine: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 4,
+  },
   logCals: {
     fontSize: 16,
     fontWeight: '700',
@@ -463,6 +703,34 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 24,
     fontWeight: '800',
+  },
+  mealPickerLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    marginBottom: 10,
+  },
+  mealPickerRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  mealPickerChip: {
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  mealPreviewBadge: {
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 14,
   },
   closeBtn: {
     width: 36,
@@ -501,5 +769,47 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 20,
     alignItems: 'center',
-  }
+  },
+  mealSelectionContent: {
+    borderRadius: 24,
+    borderWidth: 1,
+    padding: 24,
+    maxWidth: 500,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  mealSelectionTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  mealSelectionGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  mealSelectionCard: {
+    width: '48%',
+    flexGrow: 0,
+    flexShrink: 0,
+    marginBottom: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mealSelectionLabel: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginTop: 12,
+    textAlign: 'center',
+  },
+  mealSelectionHint: {
+    fontSize: 12,
+    marginTop: 4,
+    textAlign: 'center',
+  },
 });

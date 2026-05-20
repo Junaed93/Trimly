@@ -2,10 +2,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface FoodLog {
   id: string;
+  meal: string;
   foodName: string;
   quantity: number;
   unit: string;
   calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
   time: string;
 }
 

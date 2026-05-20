@@ -215,6 +215,18 @@ export default function ProfileScreen() {
     return (kg / (m * m)).toFixed(1);
   };
 
+  const formatHeight = (cm: number | null) => {
+    if (!cm) return '-';
+    const rounded = Math.round(cm * 10) / 10;
+    return rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(1);
+  };
+
+  const formatWeight = (kg: number | null) => {
+    if (!kg) return '-';
+    const rounded = Math.round(kg * 10) / 10;
+    return rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(1);
+  };
+
   if (loading) {
     return (
       <View style={[styles.center, { backgroundColor: theme.bg }]}>
@@ -381,61 +393,59 @@ export default function ProfileScreen() {
              <Text style={[styles.title, { color: theme.text }]}>{profile?.name}</Text>
           </View>
 
-          <View style={{ flexDirection: isMobileLayout ? 'column' : 'row', gap: isMobileLayout ? 0 : 24 }}>
-            {/* Main Content - Calorie Target */}
-            <View style={{ flex: 2, marginBottom: 24 }}>
-              <View style={[styles.targetCard, { backgroundColor: 'rgba(255, 255, 255, 0.1)', borderColor: 'rgba(255, 255, 255, 0.2)' }]}>
-                <View style={styles.targetHeader}>
-                   <View style={[styles.iconBox, { backgroundColor: theme.accentSurface }]}>
-                      <Ionicons name="nutrition-outline" size={20} color={theme.accentLight} />
-                   </View>
-                   <Text style={[styles.labelSm, { color: theme.textMuted, marginTop: 0 }]}>Your Daily Target</Text>
-                </View>
-                
-                <Animated.Text style={[styles.calorieText, { color: theme.text }]}>
-                  {profile?.daily_calorie_target}
-                </Animated.Text>
-                <Text style={[styles.calorieUnit, { color: theme.accentLight }]}>kcal / day</Text>
-                
-                <View style={[styles.divider, { backgroundColor: 'rgba(255, 255, 255, 0.1)' }]} />
+          {/* Calorie Target Card */}
+          <View style={{ marginBottom: 24 }}>
+            <View style={[styles.targetCard, { backgroundColor: 'rgba(255, 255, 255, 0.1)', borderColor: 'rgba(255, 255, 255, 0.2)' }]}>
+              <View style={styles.targetHeader}>
+                 <View style={[styles.iconBox, { backgroundColor: theme.accentSurface }]}>
+                    <Ionicons name="nutrition-outline" size={20} color={theme.accentLight} />
+                 </View>
+                 <Text style={[styles.labelSm, { color: theme.textMuted, marginTop: 0 }]}>Your Daily Target</Text>
+              </View>
+              
+              <Animated.Text style={[styles.calorieText, { color: theme.text }]}>
+                {profile?.daily_calorie_target}
+              </Animated.Text>
+              <Text style={[styles.calorieUnit, { color: theme.accentLight }]}>kcal / day</Text>
+              
+              <View style={[styles.divider, { backgroundColor: 'rgba(255, 255, 255, 0.1)' }]} />
 
-                <View style={[styles.goalBanner, { backgroundColor: 'rgba(255, 255, 255, 0.05)' }]}>
-                   <Ionicons name={userGoal?.icon as any} size={20} color={userGoal?.color} style={{ marginRight: 8 }} />
-                   <Text style={[styles.goalBannerText, { color: theme.text }]}>Goal: {userGoal?.label}</Text>
-                </View>
+              <View style={[styles.goalBanner, { backgroundColor: 'rgba(255, 255, 255, 0.05)' }]}>
+                 <Ionicons name={userGoal?.icon as any} size={20} color={userGoal?.color} style={{ marginRight: 8 }} />
+                 <Text style={[styles.goalBannerText, { color: theme.text }]}>Goal: {userGoal?.label}</Text>
               </View>
             </View>
+          </View>
 
-            {/* Sidebar - Body Stats */}
-            <View style={{ flex: 1 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, marginTop: isMobileLayout ? 24 : 0 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Ionicons name="stats-chart-outline" size={18} color={theme.accent} style={{ marginRight: 8 }} />
-                    <Text style={[styles.labelSm, { color: theme.textMuted, marginTop: 0 }]}>Body Statistics</Text>
-                  </View>
-                  <TouchableOpacity onPress={() => setIsEditing(true)} style={[styles.editBtn, { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)' }]}>
-                     <Ionicons name="pencil-outline" size={14} color={theme.accentLight} style={{ marginRight: 4 }} />
-                     <Text style={[styles.editBtnText, { color: theme.accentLight }]}>Edit</Text>
-                  </TouchableOpacity>
-              </View>
-
-              <View style={[styles.statsCard, { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)' }]}>
-                <InfoRow icon="resize-outline" label="Height" value={`${profile?.height_cm} cm`} theme={theme} />
-                <InfoRow icon="scale-outline" label="Weight" value={`${profile?.weight_kg} kg`} theme={theme} />
-                <InfoRow icon="calendar-outline" label="Age" value={`${profile?.age} yrs`} theme={theme} />
-                <InfoRow icon="male-female-outline" label="Gender" value={profile?.gender || '-'} theme={theme} capitalize />
-              </View>
-
-              {profile?.height_cm && profile?.weight_kg && (
-                <View style={[styles.bmiCard, { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)' }]}>
-                  <Text style={[styles.labelSm, { color: theme.textMuted, marginTop: 0, marginBottom: 8 }]}>BMI Estimate</Text>
-                  <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
-                    <Text style={[styles.bmiValue, { color: theme.text }]}>{calculateBMI(profile.height_cm, profile.weight_kg)}</Text>
-                    <Text style={[styles.bmiUnit, { color: theme.textSecondary }]}>kg/m²</Text>
-                  </View>
+          {/* Body Statistics Card */}
+          <View>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Ionicons name="stats-chart-outline" size={18} color={theme.accent} style={{ marginRight: 8 }} />
+                  <Text style={[styles.labelSm, { color: theme.textMuted, marginTop: 0 }]}>Body Statistics</Text>
                 </View>
-              )}
+                <TouchableOpacity onPress={() => setIsEditing(true)} style={[styles.editBtn, { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)' }]}>
+                   <Ionicons name="pencil-outline" size={14} color={theme.accentLight} style={{ marginRight: 4 }} />
+                   <Text style={[styles.editBtnText, { color: theme.accentLight }]}>Edit</Text>
+                </TouchableOpacity>
             </View>
+
+            <View style={[styles.statsCard, { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)', marginBottom: 24 }]}>
+              <InfoRow icon="resize-outline" label="Height" value={`${formatHeight(profile?.height_cm)} cm`} theme={theme} />
+              <InfoRow icon="scale-outline" label="Weight" value={`${formatWeight(profile?.weight_kg)} kg`} theme={theme} />
+              <InfoRow icon="calendar-outline" label="Age" value={`${profile?.age} yrs`} theme={theme} />
+              <InfoRow icon="male-female-outline" label="Gender" value={profile?.gender || '-'} theme={theme} capitalize />
+            </View>
+
+            {profile?.height_cm && profile?.weight_kg && (
+              <View style={[styles.bmiCard, { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)' }]}>
+                <Text style={[styles.labelSm, { color: theme.textMuted, marginTop: 0, marginBottom: 8 }]}>BMI Estimate</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
+                  <Text style={[styles.bmiValue, { color: theme.text }]}>{calculateBMI(profile.height_cm, profile.weight_kg)}</Text>
+                  <Text style={[styles.bmiUnit, { color: theme.textSecondary }]}>kg/m²</Text>
+                </View>
+              </View>
+            )}
           </View>
         </View>
       </ScrollView>

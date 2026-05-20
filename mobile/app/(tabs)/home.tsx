@@ -121,74 +121,66 @@ export default function HomeScreen() {
           <ActivityIndicator size="large" color={theme.accent} style={{ marginTop: 40 }} />
         ) : (
           <>
-            {/* Top Layout: Left/Right Split */}
-            <View style={{ flexDirection: isMobileLayout ? 'column' : 'row', gap: 16 }}>
+            {/* Weight Logger Card */}
+            <View style={[styles.glassCard, { backgroundColor: 'rgba(255, 255, 255, 0.1)', borderColor: 'rgba(255, 255, 255, 0.2)', marginBottom: 16 }]}>
+              <View style={styles.cardHeader}>
+                <View style={[styles.iconBox, { backgroundColor: theme.accentSurface }]}>
+                  <Ionicons name="scale-outline" size={24} color={theme.accentLight} />
+                </View>
+                <Text style={[styles.cardTitle, { color: theme.text }]}>Log Weight</Text>
+              </View>
               
-              {/* Left Column: Weight Logger */}
-              <View style={{ flex: 1 }}>
-                <View style={[styles.glassCard, { backgroundColor: 'rgba(255, 255, 255, 0.1)', borderColor: 'rgba(255, 255, 255, 0.2)' }]}>
-                  <View style={styles.cardHeader}>
-                    <View style={[styles.iconBox, { backgroundColor: theme.accentSurface }]}>
-                      <Ionicons name="scale-outline" size={24} color={theme.accentLight} />
-                    </View>
-                    <Text style={[styles.cardTitle, { color: theme.text }]}>Log Weight</Text>
-                  </View>
-                  
-                  <View style={{ marginTop: 8 }}>
-                    <Input
-                      label="Today's Weight (kg)"
-                      value={weightInput}
-                      onChangeText={setWeightInput}
-                      keyboardType="numeric"
-                      icon="speedometer-outline"
-                    />
-                    <View style={{ marginTop: 12 }}>
-                      <Button title="Save Entry" onPress={handleLogWeight} loading={submitting} />
-                    </View>
-                  </View>
-
-                  {logs.length > 0 && (
-                     <View style={{ marginTop: 24 }}>
-                       <Text style={[styles.historyTitle, { color: theme.textSecondary }]}>Recent Logs</Text>
-                       {logs.slice(0, 3).map((log, i) => (
-                          <View key={log.id} style={[styles.historyRow, { borderBottomColor: theme.border, borderBottomWidth: i === logs.slice(0,3).length - 1 ? 0 : 1 }]}>
-                             <Text style={{ color: theme.text }}>{new Date(log.recorded_at).toLocaleDateString()}</Text>
-                             <Text style={{ color: theme.accentLight, fontWeight: 'bold' }}>{log.weight_kg} kg</Text>
-                          </View>
-                       ))}
-                     </View>
-                  )}
+              <View style={{ marginTop: 8 }}>
+                <Input
+                  label="Today's Weight (kg)"
+                  value={weightInput}
+                  onChangeText={setWeightInput}
+                  keyboardType="numeric"
+                  icon="speedometer-outline"
+                />
+                <View style={{ marginTop: 12 }}>
+                  <Button title="Save Entry" onPress={handleLogWeight} loading={submitting} />
                 </View>
               </View>
 
-              {/* Right Column: Weight Stats */}
-              <View style={{ flex: 1 }}>
-                <View style={[styles.glassCard, { backgroundColor: 'rgba(255, 255, 255, 0.1)', borderColor: 'rgba(255, 255, 255, 0.2)' }]}>
-                  <Text style={[styles.cardTitle, { color: theme.text, marginBottom: 16 }]}>Weight Stats</Text>
-                  
-                  <View style={styles.statGrid}>
-                    <View style={[styles.statBox, { borderColor: theme.border, backgroundColor: 'rgba(255,255,255,0.05)' }]}>
-                      <Text style={[styles.statLabel, { color: theme.textMuted }]}>Initial</Text>
-                      <Text style={[styles.statValue, { color: theme.text }]}>{initialWeight > 0 ? `${initialWeight.toFixed(1)} kg` : '-'}</Text>
-                    </View>
-                    <View style={[styles.statBox, { borderColor: theme.border, backgroundColor: 'rgba(255,255,255,0.05)' }]}>
-                      <Text style={[styles.statLabel, { color: theme.textMuted }]}>Current</Text>
-                      <Text style={[styles.statValue, { color: theme.accentLight }]}>{currentWeight > 0 ? `${currentWeight.toFixed(1)} kg` : '-'}</Text>
-                    </View>
-                  </View>
+              {logs.length > 0 && (
+                 <View style={{ marginTop: 24 }}>
+                   <Text style={[styles.historyTitle, { color: theme.textSecondary }]}>Recent Logs</Text>
+                   {logs.slice(0, 3).map((log, i) => (
+                      <View key={log.id} style={[styles.historyRow, { borderBottomColor: theme.border, borderBottomWidth: i === logs.slice(0,3).length - 1 ? 0 : 1 }]}>
+                         <Text style={{ color: theme.text }}>{new Date(log.recorded_at).toLocaleDateString()}</Text>
+                         <Text style={{ color: theme.accentLight, fontWeight: 'bold' }}>{log.weight_kg} kg</Text>
+                      </View>
+                   ))}
+                 </View>
+              )}
+            </View>
 
-                  <View style={styles.statGrid}>
-                    <View style={[styles.statBox, { borderColor: theme.border, backgroundColor: 'rgba(255,255,255,0.05)' }]}>
-                      <Text style={[styles.statLabel, { color: theme.textMuted }]}>Progress</Text>
-                      <Text style={[styles.statValue, { color: weightLoss >= 0 ? theme.success : theme.error }]}>
-                        {weightLossPercentage > 0 ? `-${weightLossPercentage.toFixed(1)}%` : `+${Math.abs(weightLossPercentage).toFixed(1)}%`}
-                      </Text>
-                    </View>
-                    <View style={[styles.statBox, { borderColor: theme.border, backgroundColor: 'rgba(255,255,255,0.05)' }]}>
-                      <Text style={[styles.statLabel, { color: theme.textMuted }]}>To Goal</Text>
-                      <Text style={[styles.statValue, { color: theme.warning }]}>{remainingGoal > 0 ? `${remainingGoal.toFixed(1)} kg` : 'Done!'}</Text>
-                    </View>
-                  </View>
+            {/* Weight Stats Card */}
+            <View style={[styles.glassCard, { backgroundColor: 'rgba(255, 255, 255, 0.1)', borderColor: 'rgba(255, 255, 255, 0.2)', marginBottom: 16 }]}>
+              <Text style={[styles.cardTitle, { color: theme.text, marginBottom: 16 }]}>Weight Stats</Text>
+              
+              <View style={styles.statGrid}>
+                <View style={[styles.statBox, { borderColor: theme.border, backgroundColor: 'rgba(255,255,255,0.05)' }]}>
+                  <Text style={[styles.statLabel, { color: theme.textMuted }]}>Initial</Text>
+                  <Text style={[styles.statValue, { color: theme.text }]}>{initialWeight > 0 ? `${initialWeight.toFixed(1)} kg` : '-'}</Text>
+                </View>
+                <View style={[styles.statBox, { borderColor: theme.border, backgroundColor: 'rgba(255,255,255,0.05)' }]}>
+                  <Text style={[styles.statLabel, { color: theme.textMuted }]}>Current</Text>
+                  <Text style={[styles.statValue, { color: theme.accentLight }]}>{currentWeight > 0 ? `${currentWeight.toFixed(1)} kg` : '-'}</Text>
+                </View>
+              </View>
+
+              <View style={styles.statGrid}>
+                <View style={[styles.statBox, { borderColor: theme.border, backgroundColor: 'rgba(255,255,255,0.05)' }]}>
+                  <Text style={[styles.statLabel, { color: theme.textMuted }]}>Progress</Text>
+                  <Text style={[styles.statValue, { color: weightLoss >= 0 ? theme.success : theme.error }]}>
+                    {weightLossPercentage > 0 ? `-${weightLossPercentage.toFixed(1)}%` : `+${Math.abs(weightLossPercentage).toFixed(1)}%`}
+                  </Text>
+                </View>
+                <View style={[styles.statBox, { borderColor: theme.border, backgroundColor: 'rgba(255,255,255,0.05)' }]}>
+                  <Text style={[styles.statLabel, { color: theme.textMuted }]}>To Goal</Text>
+                  <Text style={[styles.statValue, { color: theme.warning }]}>{remainingGoal > 0 ? `${remainingGoal.toFixed(1)} kg` : 'Done!'}</Text>
                 </View>
               </View>
             </View>

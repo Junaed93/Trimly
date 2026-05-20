@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Platform, StyleSheet, Animated, useWindowDimensions, Keyboard, PanResponder, TouchableOpacity } from 'react-native';
+import { View, Platform, StyleSheet, Animated, useWindowDimensions, Keyboard, PanResponder, TouchableOpacity, LinearGradient } from 'react-native';
 import { Tabs } from 'expo-router';
 import { BlurView } from 'expo-blur';
+import { GlassView, isGlassEffectAPIAvailable } from 'expo-glass-effect';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
@@ -107,13 +108,28 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
 
   if (isKeyboardVisible) return null; // Hide on keyboard open
 
+  const useLiquidGlass = Platform.OS === 'ios' && typeof isGlassEffectAPIAvailable === 'function' && isGlassEffectAPIAvailable();
+
   return (
     <View style={styles.tabBarContainer}>
-      <View style={[styles.blurContainer, { borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.5)' }]}>
-        {Platform.OS !== 'web' ? (
-          <BlurView tint={isDark ? "dark" : "light"} intensity={80} style={StyleSheet.absoluteFill} />
+      <View style={[styles.blurContainer, { borderColor: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.6)' }]}>
+        {useLiquidGlass ? (
+          <GlassView glassEffectStyle="regular" style={StyleSheet.absoluteFill} />
+        ) : Platform.OS !== 'web' ? (
+          <>
+            <BlurView tint={isDark ? "dark" : "light"} intensity={95} style={StyleSheet.absoluteFill} />
+            <LinearGradient
+              colors={[
+                isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.15)',
+                isDark ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.05)'
+              ]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+              style={StyleSheet.absoluteFill}
+            />
+          </>
         ) : (
-          <View style={[StyleSheet.absoluteFill, { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)', backdropFilter: 'blur(10px)' } as any]} />
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)', backdropFilter: 'blur(15px)' } as any]} />
         )}
         
         {/* Animated Sliding Highlight Pill */}
