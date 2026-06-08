@@ -176,7 +176,7 @@ export default function LoginScreen() {
               style={[styles.googleBtn, { backgroundColor: theme.surface, borderColor: theme.border }]}
               onPress={() => {
                 if (typeof window !== 'undefined') {
-                  window.location.href = 'http://localhost:3000/auth/google';
+                  window.location.href = 'http://192.168.0.100:3000/auth/google';
                 }
               }}
               activeOpacity={0.75}

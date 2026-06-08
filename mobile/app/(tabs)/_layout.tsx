@@ -1,26 +1,22 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { View, Platform, StyleSheet, Animated, useWindowDimensions, Keyboard, PanResponder, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Platform, StyleSheet, Keyboard, TouchableOpacity, Text } from 'react-native';
 import { Tabs } from 'expo-router';
-import { BlurView } from 'expo-blur';
-import { LinearGradient } from 'expo-linear-gradient';
-import { GlassView, isGlassEffectAPIAvailable } from 'expo-glass-effect';
-import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import * as Icons from 'lucide-react-native';
+
+let LiquidTabBar: any = null;
+if (Platform.OS !== 'web') {
+  LiquidTabBar = require('liquidglass-rn').LiquidTabBar;
+}
 
 const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
   const { theme, isDark } = useTheme();
-  const { width } = useWindowDimensions();
+  
   const visibleRouteNames = ['home', 'food', 'calorie', 'profile'];
   const visibleRoutes = state.routes.filter((route) => visibleRouteNames.includes(route.name));
   
-  // Tab Bar Width configuration
-  const HORIZONTAL_PADDING = 16;
-  const TAB_BAR_WIDTH = width - (HORIZONTAL_PADDING * 2);
-  const TAB_WIDTH = TAB_BAR_WIDTH / visibleRoutes.length;
-  
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
-  const panX = useRef(new Animated.Value(state.index * TAB_WIDTH)).current;
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -38,197 +34,66 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
     };
   }, []);
 
-  // Sync animation when state changes externally (e.g. standard click or back button)
-  useEffect(() => {
-    Animated.spring(panX, {
-      toValue: state.index * TAB_WIDTH,
-      useNativeDriver: false,
-      bounciness: 8,
-      speed: 12
-    }).start();
-  }, [state.index, TAB_WIDTH]);
+  if (isKeyboardVisible) return null;
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => false, // Let TouchableOpacity handle pure taps/clicks!
-      onStartShouldSetPanResponderCapture: () => false,
-      onMoveShouldSetPanResponder: (e, gs) => Math.abs(gs.dx) > 5, // Hijack gesture if dragging horizontally
-      onMoveShouldSetPanResponderCapture: (e, gs) => Math.abs(gs.dx) > 5,
-      onPanResponderGrant: (e, gs) => {
-        panX.stopAnimation();
-        // Since we hijack mid-move, gs.x0 is where the gesture started.
-        let localX = gs.x0 - HORIZONTAL_PADDING;
-        let newX = localX - (TAB_WIDTH / 2);
-        const maxX = (visibleRoutes.length - 1) * TAB_WIDTH;
-        if (newX < 0) newX = 0;
-        if (newX > maxX) newX = maxX;
-        panX.setValue(newX);
-      },
-      onPanResponderMove: (e, gs) => {
-        let localX = gs.moveX - HORIZONTAL_PADDING;
-        let newX = localX - (TAB_WIDTH / 2);
-        const maxX = (visibleRoutes.length - 1) * TAB_WIDTH;
-        if (newX < 0) newX = 0;
-        if (newX > maxX) newX = maxX;
-        panX.setValue(newX);
-      },
-      onPanResponderRelease: (e, gs) => {
-        let localX = (gs.moveX > 0 ? gs.moveX : gs.x0) - HORIZONTAL_PADDING;
-        
-        let targetIndex = Math.floor(localX / TAB_WIDTH);
-        if (targetIndex < 0) targetIndex = 0;
-        if (targetIndex >= visibleRoutes.length) targetIndex = visibleRoutes.length - 1;
+  const routes: any[] = visibleRoutes.map((route) => {
+    let title = route.name;
+    let icon: any = 'Home';
+    if (route.name === 'home') { title = 'Home'; icon = 'Home'; }
+    else if (route.name === 'food') { title = 'Food'; icon = 'Utensils'; }
+    else if (route.name === 'calorie') { title = 'Calorie'; icon = 'Flame'; }
+    else if (route.name === 'profile') { title = 'Profile'; icon = 'User'; }
 
-        Animated.spring(panX, {
-          toValue: targetIndex * TAB_WIDTH,
-          useNativeDriver: false, // Ensure smooth handoff from JS touch to animation
-          bounciness: 8,
-          speed: 12
-        }).start();
+    return {
+      key: route.key,
+      title,
+      icon,
+    };
+  });
 
-        const route = visibleRoutes[targetIndex];
-        
-        const event = navigation.emit({
-          type: 'tabPress',
-          target: route.key,
-          canPreventDefault: true,
-        });
+  const currentRouteName = state.routes[state.index]?.name;
+  const activeIndex = visibleRoutes.findIndex(r => r.name === currentRouteName);
 
-        if (route && targetIndex !== state.index && !event.defaultPrevented) {
-          navigation.navigate({ name: route.name, params: undefined, merge: true });
-        }
-      },
-      onPanResponderTerminate: () => {
-         Animated.spring(panX, {
-           toValue: Math.max(0, visibleRoutes.findIndex((route) => route.name === state.routes[state.index]?.name)) * TAB_WIDTH,
-           useNativeDriver: false,
-           bounciness: 8,
-           speed: 12
-         }).start();
-      }
-    })
-  ).current;
+  const onChange = (index: number) => {
+    const route = visibleRoutes[index];
+    const event = navigation.emit({
+      type: 'tabPress',
+      target: route.key,
+      canPreventDefault: true,
+    });
 
-  if (isKeyboardVisible) return null; // Hide on keyboard open
+    if (activeIndex !== index && !event.defaultPrevented) {
+      navigation.navigate({ name: route.name, params: undefined, merge: true });
+    }
+  };
 
-  const useLiquidGlass = Platform.OS === 'ios' && typeof isGlassEffectAPIAvailable === 'function' && isGlassEffectAPIAvailable();
+  if (Platform.OS === 'web') {
+    return (
+      <View style={[styles.tabBarContainer, { height: 64, flexDirection: 'row', backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)', backdropFilter: 'blur(15px)', borderRadius: 32, overflow: 'hidden' } as any]}>
+        {routes.map((route, index) => {
+          const isActive = index === activeIndex;
+          const IconComponent = (Icons as any)[route.icon] || Icons.HelpCircle;
+          return (
+            <TouchableOpacity key={route.key} style={styles.webTabItem} onPress={() => onChange(index)}>
+              <IconComponent size={22} color={isActive ? theme.accentLight : theme.textMuted} />
+              <Text style={{ fontSize: 10, marginTop: 4, color: isActive ? theme.accentLight : theme.textMuted }}>{route.title}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    );
+  }
 
   return (
     <View style={styles.tabBarContainer}>
-      <View style={[styles.blurContainer, { borderColor: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.6)' }]}>
-        {useLiquidGlass ? (
-          <GlassView glassEffectStyle="regular" style={StyleSheet.absoluteFill} />
-        ) : Platform.OS !== 'web' ? (
-          <>
-            <BlurView tint={isDark ? "dark" : "light"} intensity={95} style={StyleSheet.absoluteFill} />
-            <LinearGradient
-              colors={[
-                isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.15)',
-                isDark ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.05)'
-              ]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 0, y: 1 }}
-              style={StyleSheet.absoluteFill}
-            />
-          </>
-        ) : (
-          <View style={[StyleSheet.absoluteFill, { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)', backdropFilter: 'blur(15px)' } as any]} />
-        )}
-        
-        {/* Animated Sliding Highlight Pill */}
-        <Animated.View style={[
-          styles.activePill, 
-          { 
-            width: TAB_WIDTH,
-            transform: [{ translateX: panX }]
-          }
-        ]}>
-          <View style={[styles.pillInner, { backgroundColor: theme.accentSurface }]} />
-        </Animated.View>
-
-        {/* Tab Items Container wrapped with PanResponder */}
-        <View style={styles.tabItemsContainer} {...panResponder.panHandlers}>
-          {visibleRoutes.map((route, index) => {
-            const { options } = descriptors[route.key];
-            const isFocused = state.routes[state.index]?.name === route.name;
-
-            // Icons
-            let iconName: any = 'home-outline';
-            if (route.name === 'home') iconName = isFocused ? 'home' : 'home-outline';
-            else if (route.name === 'food') iconName = isFocused ? 'restaurant' : 'restaurant-outline';
-            else if (route.name === 'calorie') iconName = isFocused ? 'flame' : 'flame-outline';
-            else if (route.name === 'profile') iconName = isFocused ? 'person' : 'person-outline';
-
-            const onPress = () => {
-              const event = navigation.emit({
-                type: 'tabPress',
-                target: route.key,
-                canPreventDefault: true,
-              });
-
-              if (!isFocused && !event.defaultPrevented) {
-                navigation.navigate({ name: route.name, params: undefined, merge: true });
-              }
-            };
-
-            const onLongPress = () => {
-              navigation.emit({
-                type: 'tabLongPress',
-                target: route.key,
-              });
-            };
-
-            return (
-              <TouchableOpacity
-                key={route.key}
-                accessibilityRole="button"
-                accessibilityState={isFocused ? { selected: true } : {}}
-                accessibilityLabel={options.tabBarAccessibilityLabel}
-                testID={options.tabBarButtonTestID}
-                onPress={onPress}
-                onLongPress={onLongPress}
-                style={styles.tabItem}
-              >
-                <AnimatedIcon 
-                   name={iconName} 
-                   panX={panX}
-                   index={index}
-                   tabWidth={TAB_WIDTH}
-                   isFocused={isFocused} 
-                   activeColor={theme.accentLight} 
-                   inactiveColor={theme.textMuted} 
-                />
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </View>
+      <LiquidTabBar
+        routes={routes}
+        activeIndex={Math.max(0, activeIndex)}
+        onChange={onChange}
+        activeColor={theme.accentLight}
+        inactiveColor={theme.textMuted}
+      />
     </View>
-  );
-};
-
-// Continuous Magnifying Glass Effect driven directly by PanX
-const AnimatedIcon = ({ name, panX, index, tabWidth, isFocused, activeColor, inactiveColor }: any) => {
-  const targetX = index * tabWidth;
-  
-  // Bulge up to 1.35x scale when the highlight pill is perfectly centered underneath it
-  const scale = panX.interpolate({
-    inputRange: [targetX - tabWidth, targetX, targetX + tabWidth],
-    outputRange: [1, 1.35, 1],
-    extrapolate: 'clamp'
-  });
-  
-  // Slight upward lift (levitation) when focused/magnified
-  const translateY = panX.interpolate({
-    inputRange: [targetX - tabWidth, targetX, targetX + tabWidth],
-    outputRange: [0, -3, 0],
-    extrapolate: 'clamp'
-  });
-
-  return (
-    <Animated.View style={{ transform: [{ scale }, { translateY }] }}>
-      <Ionicons name={name} size={24} color={isFocused ? activeColor : inactiveColor} />
-    </Animated.View>
   );
 };
 
@@ -247,37 +112,15 @@ const styles = StyleSheet.create({
   tabBarContainer: {
     position: 'absolute',
     bottom: Platform.OS === 'ios' ? 24 : 16,
-    left: 16,
-    right: 16,
-    height: 64,
+    left: 0,
+    right: 0,
     zIndex: 999,
     elevation: 10,
   },
-  blurContainer: {
-    flex: 1,
-    borderRadius: 32,
-    overflow: 'hidden',
-    borderWidth: 1,
-  },
-  tabItemsContainer: {
-    flex: 1,
-    flexDirection: 'row',
-  },
-  tabItem: {
+  webTabItem: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  activePill: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  pillInner: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
   }
 });
+

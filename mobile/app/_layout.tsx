@@ -1,8 +1,15 @@
 import '../global.css';
+import React from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { View } from 'react-native';
+import { View, Platform } from 'react-native';
 import { ThemeProvider, useTheme } from '../context/ThemeContext';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
+let LiquidThemeProvider: any = ({ children }: any) => <>{children}</>;
+if (Platform.OS !== 'web') {
+  LiquidThemeProvider = require('liquidglass-rn').LiquidThemeProvider;
+}
 
 function AppShell() {
   const { theme, isDark } = useTheme();
@@ -21,9 +28,14 @@ function AppShell() {
 }
 
 export default function RootLayout() {
+
   return (
-    <ThemeProvider>
-      <AppShell />
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <LiquidThemeProvider defaultMode="system">
+        <ThemeProvider>
+          <AppShell />
+        </ThemeProvider>
+      </LiquidThemeProvider>
+    </GestureHandlerRootView>
   );
 }
