@@ -53,7 +53,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     setError('');
-    const ok = validateEmail() & validatePass();
+    const ok = validateEmail() && validatePass();
     if (!ok) return;
 
     setLoading(true);
