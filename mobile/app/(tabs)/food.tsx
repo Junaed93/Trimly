@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, StyleSheet, Platform, ScrollView, FlatList, TouchableOpacity, Alert, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
@@ -39,6 +39,7 @@ export default function FoodScreen() {
   const [consumedCalories, setConsumedCalories] = useState(0);
   const [todayLogs, setTodayLogs] = useState<FoodLog[]>([]);
   const [selectedMeal, setSelectedMeal] = useState<MealKey>('breakfast');
+  const [selectedDate, setSelectedDate] = useState(getTodayString());
 
   // Modals Visibility
   const [searchModalVisible, setSearchModalVisible] = useState(false);
@@ -56,9 +57,8 @@ export default function FoodScreen() {
   };
 
   const loadLogs = async () => {
-    const today = getTodayString();
-    const cals = await getDailyCalories(today);
-    const logs = await getDailyFoodLogs(today);
+    const cals = await getDailyCalories(selectedDate);
+    const logs = await getDailyFoodLogs(selectedDate);
     setConsumedCalories(cals);
     setTodayLogs(
       logs.map((log: any) => ({
@@ -75,7 +75,7 @@ export default function FoodScreen() {
     useCallback(() => {
       fetchData();
       loadLogs();
-    }, [])
+    }, [selectedDate])
   );
 
   const openAddModal = (food: FoodItem) => {
@@ -111,7 +111,7 @@ export default function FoodScreen() {
 
     try {
       const factor = selectedFood.serving_size.includes('100g') ? qty / 100 : qty;
-      await logFoodItem(getTodayString(), {
+      await logFoodItem(selectedDate, {
         meal: selectedMeal,
         foodName: selectedFood.food_name_en,
         quantity: qty,
@@ -300,7 +300,28 @@ export default function FoodScreen() {
     <GlassBackground>
       <AppHeader />
       <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
-        <Text style={[styles.title, { color: theme.text }]}>Food Log</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <Text style={[styles.title, { color: theme.text, marginBottom: 0 }]}>Food Log</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <TouchableOpacity onPress={() => {
+              const d = new Date(selectedDate);
+              d.setDate(d.getDate() - 1);
+              setSelectedDate(d.toISOString().split('T')[0]);
+            }} style={{ padding: 8 }}>
+              <Ionicons name="chevron-back" size={24} color={theme.text} />
+            </TouchableOpacity>
+            <Text style={{ fontSize: 16, fontWeight: '600', color: theme.text, marginHorizontal: 8 }}>
+              {selectedDate === getTodayString() ? 'Today' : selectedDate}
+            </Text>
+            <TouchableOpacity onPress={() => {
+              const d = new Date(selectedDate);
+              d.setDate(d.getDate() + 1);
+              setSelectedDate(d.toISOString().split('T')[0]);
+            }} style={{ padding: 8 }}>
+              <Ionicons name="chevron-forward" size={24} color={theme.text} />
+            </TouchableOpacity>
+          </View>
+        </View>
         
         {/* Calorie Summary Banner */}
         <View style={[styles.summaryBanner, { backgroundColor: 'rgba(255, 255, 255, 0.1)', borderColor: 'rgba(255, 255, 255, 0.2)' }]}>

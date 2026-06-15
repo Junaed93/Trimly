@@ -1,0 +1,702 @@
+[
+  {
+    "id": 1,
+    "exercise_name_en": "Walking Slow",
+    "exercise_name_bn": "ধীরে হাঁটা",
+    "category": "Cardio",
+    "met": 2.8
+  },
+  {
+    "id": 2,
+    "exercise_name_en": "Walking Moderate",
+    "exercise_name_bn": "মাঝারি হাঁটা",
+    "category": "Cardio",
+    "met": 3.5
+  },
+  {
+    "id": 3,
+    "exercise_name_en": "Walking Fast",
+    "exercise_name_bn": "দ্রুত হাঁটা",
+    "category": "Cardio",
+    "met": 4.8
+  },
+  {
+    "id": 4,
+    "exercise_name_en": "Jogging",
+    "exercise_name_bn": "জগিং",
+    "category": "Cardio",
+    "met": 7.0
+  },
+  {
+    "id": 5,
+    "exercise_name_en": "Running 8 km/h",
+    "exercise_name_bn": "দৌড়ানো",
+    "category": "Cardio",
+    "met": 8.3
+  },
+  {
+    "id": 6,
+    "exercise_name_en": "Running 10 km/h",
+    "exercise_name_bn": "দ্রুত দৌড়ানো",
+    "category": "Cardio",
+    "met": 9.8
+  },
+  {
+    "id": 7,
+    "exercise_name_en": "Sprint Running",
+    "exercise_name_bn": "স্প্রিন্ট",
+    "category": "Cardio",
+    "met": 15.0
+  },
+  {
+    "id": 8,
+    "exercise_name_en": "Cycling Leisure",
+    "exercise_name_bn": "সাইক্লিং",
+    "category": "Cardio",
+    "met": 4.0
+  },
+  {
+    "id": 9,
+    "exercise_name_en": "Cycling Moderate",
+    "exercise_name_bn": "মাঝারি সাইক্লিং",
+    "category": "Cardio",
+    "met": 6.8
+  },
+  {
+    "id": 10,
+    "exercise_name_en": "Cycling Fast",
+    "exercise_name_bn": "দ্রুত সাইক্লিং",
+    "category": "Cardio",
+    "met": 10.0
+  },
+  {
+    "id": 11,
+    "exercise_name_en": "Jump Rope",
+    "exercise_name_bn": "দড়ি লাফ",
+    "category": "Cardio",
+    "met": 12.3
+  },
+  {
+    "id": 12,
+    "exercise_name_en": "Swimming Easy",
+    "exercise_name_bn": "সাঁতার",
+    "category": "Cardio",
+    "met": 6.0
+  },
+  {
+    "id": 13,
+    "exercise_name_en": "Swimming Vigorous",
+    "exercise_name_bn": "দ্রুত সাঁতার",
+    "category": "Cardio",
+    "met": 9.8
+  },
+  {
+    "id": 14,
+    "exercise_name_en": "Stair Climbing",
+    "exercise_name_bn": "সিঁড়ি ওঠা",
+    "category": "Cardio",
+    "met": 8.8
+  },
+  {
+    "id": 15,
+    "exercise_name_en": "Hiking",
+    "exercise_name_bn": "হাইকিং",
+    "category": "Cardio",
+    "met": 6.0
+  },
+  {
+    "id": 16,
+    "exercise_name_en": "Football",
+    "exercise_name_bn": "ফুটবল",
+    "category": "Sports",
+    "met": 7.0
+  },
+  {
+    "id": 17,
+    "exercise_name_en": "Cricket",
+    "exercise_name_bn": "ক্রিকেট",
+    "category": "Sports",
+    "met": 5.0
+  },
+  {
+    "id": 18,
+    "exercise_name_en": "Basketball",
+    "exercise_name_bn": "বাস্কেটবল",
+    "category": "Sports",
+    "met": 8.0
+  },
+  {
+    "id": 19,
+    "exercise_name_en": "Badminton",
+    "exercise_name_bn": "ব্যাডমিন্টন",
+    "category": "Sports",
+    "met": 5.5
+  },
+  {
+    "id": 20,
+    "exercise_name_en": "Tennis",
+    "exercise_name_bn": "টেনিস",
+    "category": "Sports",
+    "met": 7.3
+  },
+  {
+    "id": 21,
+    "exercise_name_en": "Push Up",
+    "exercise_name_bn": "পুশ আপ",
+    "category": "Strength",
+    "met": 8.0
+  },
+  {
+    "id": 22,
+    "exercise_name_en": "Pull Up",
+    "exercise_name_bn": "পুল আপ",
+    "category": "Strength",
+    "met": 8.5
+  },
+  {
+    "id": 23,
+    "exercise_name_en": "Squat",
+    "exercise_name_bn": "স্কোয়াট",
+    "category": "Strength",
+    "met": 5.0
+  },
+  {
+    "id": 24,
+    "exercise_name_en": "Lunges",
+    "exercise_name_bn": "লাঞ্জ",
+    "category": "Strength",
+    "met": 5.0
+  },
+  {
+    "id": 25,
+    "exercise_name_en": "Deadlift",
+    "exercise_name_bn": "ডেডলিফট",
+    "category": "Strength",
+    "met": 6.0
+  },
+  {
+    "id": 26,
+    "exercise_name_en": "Bench Press",
+    "exercise_name_bn": "বেঞ্চ প্রেস",
+    "category": "Strength",
+    "met": 6.0
+  },
+  {
+    "id": 27,
+    "exercise_name_en": "Shoulder Press",
+    "exercise_name_bn": "শোল্ডার প্রেস",
+    "category": "Strength",
+    "met": 5.5
+  },
+  {
+    "id": 28,
+    "exercise_name_en": "Bicep Curl",
+    "exercise_name_bn": "বাইসেপ কার্ল",
+    "category": "Strength",
+    "met": 3.5
+  },
+  {
+    "id": 29,
+    "exercise_name_en": "Tricep Pushdown",
+    "exercise_name_bn": "ট্রাইসেপ পুশডাউন",
+    "category": "Strength",
+    "met": 3.5
+  },
+  {
+    "id": 30,
+    "exercise_name_en": "Lat Pulldown",
+    "exercise_name_bn": "ল্যাট পুলডাউন",
+    "category": "Strength",
+    "met": 4.0
+  },
+  {
+    "id": 31,
+    "exercise_name_en": "Plank",
+    "exercise_name_bn": "প্ল্যাঙ্ক",
+    "category": "Core",
+    "met": 3.8
+  },
+  {
+    "id": 32,
+    "exercise_name_en": "Crunches",
+    "exercise_name_bn": "ক্রাঞ্চ",
+    "category": "Core",
+    "met": 5.0
+  },
+  {
+    "id": 33,
+    "exercise_name_en": "Sit Ups",
+    "exercise_name_bn": "সিট আপ",
+    "category": "Core",
+    "met": 6.0
+  },
+  {
+    "id": 34,
+    "exercise_name_en": "Mountain Climbers",
+    "exercise_name_bn": "মাউন্টেন ক্লাইম্বার",
+    "category": "HIIT",
+    "met": 8.0
+  },
+  {
+    "id": 35,
+    "exercise_name_en": "Burpees",
+    "exercise_name_bn": "বার্পি",
+    "category": "HIIT",
+    "met": 10.0
+  },
+  {
+    "id": 36,
+    "exercise_name_en": "Jump Squats",
+    "exercise_name_bn": "জাম্প স্কোয়াট",
+    "category": "HIIT",
+    "met": 8.0
+  },
+  {
+    "id": 37,
+    "exercise_name_en": "High Knees",
+    "exercise_name_bn": "হাই নিস",
+    "category": "HIIT",
+    "met": 8.0
+  },
+  {
+    "id": 38,
+    "exercise_name_en": "Box Jump",
+    "exercise_name_bn": "বক্স জাম্প",
+    "category": "HIIT",
+    "met": 8.8
+  },
+  {
+    "id": 39,
+    "exercise_name_en": "Yoga",
+    "exercise_name_bn": "যোগব্যায়াম",
+    "category": "Flexibility",
+    "met": 2.5
+  },
+  {
+    "id": 40,
+    "exercise_name_en": "Power Yoga",
+    "exercise_name_bn": "পাওয়ার যোগা",
+    "category": "Flexibility",
+    "met": 4.0
+  },
+  {
+    "id": 41,
+    "exercise_name_en": "Stretching",
+    "exercise_name_bn": "স্ট্রেচিং",
+    "category": "Flexibility",
+    "met": 2.3
+  },
+  {
+    "id": 42,
+    "exercise_name_en": "Pilates",
+    "exercise_name_bn": "পিলাটিস",
+    "category": "Flexibility",
+    "met": 3.0
+  },
+  {
+    "id": 43,
+    "exercise_name_en": "Dancing",
+    "exercise_name_bn": "নাচ",
+    "category": "Cardio",
+    "met": 5.5
+  },
+  {
+    "id": 44,
+    "exercise_name_en": "Zumba",
+    "exercise_name_bn": "জুম্বা",
+    "category": "Cardio",
+    "met": 7.5
+  },
+  {
+    "id": 45,
+    "exercise_name_en": "Rowing Machine",
+    "exercise_name_bn": "রোয়িং",
+    "category": "Cardio",
+    "met": 7.0
+  },
+  {
+    "id": 46,
+    "exercise_name_en": "Elliptical",
+    "exercise_name_bn": "এলিপটিক্যাল",
+    "category": "Cardio",
+    "met": 5.0
+  },
+  {
+    "id": 47,
+    "exercise_name_en": "Treadmill Walking",
+    "exercise_name_bn": "ট্রেডমিল হাঁটা",
+    "category": "Cardio",
+    "met": 4.0
+  },
+  {
+    "id": 48,
+    "exercise_name_en": "Treadmill Running",
+    "exercise_name_bn": "ট্রেডমিল দৌড়",
+    "category": "Cardio",
+    "met": 9.0
+  },
+  {
+    "id": 49,
+    "exercise_name_en": "CrossFit",
+    "exercise_name_bn": "ক্রসফিট",
+    "category": "HIIT",
+    "met": 10.0
+  },
+  {
+    "id": 50,
+    "exercise_name_en": "Weight Training",
+    "exercise_name_bn": "ওয়েট ট্রেনিং",
+    "category": "Strength",
+    "met": 6.0
+  },
+  {
+    "id": 51,
+    "exercise_name_en": "Incline Walking",
+    "exercise_name_bn": "ইনক্লাইন হাঁটা",
+    "category": "Cardio",
+    "met": 6.0
+  },
+  {
+    "id": 52,
+    "exercise_name_en": "Hill Sprint",
+    "exercise_name_bn": "পাহাড়ি স্প্রিন্ট",
+    "category": "HIIT",
+    "met": 14.0
+  },
+  {
+    "id": 53,
+    "exercise_name_en": "Battle Ropes",
+    "exercise_name_bn": "ব্যাটল রোপ",
+    "category": "HIIT",
+    "met": 10.5
+  },
+  {
+    "id": 54,
+    "exercise_name_en": "Air Bike",
+    "exercise_name_bn": "এয়ার বাইক",
+    "category": "Cardio",
+    "met": 9.5
+  },
+  {
+    "id": 55,
+    "exercise_name_en": "Spin Bike",
+    "exercise_name_bn": "স্পিন বাইক",
+    "category": "Cardio",
+    "met": 8.5
+  },
+  {
+    "id": 56,
+    "exercise_name_en": "Stationary Bike Light",
+    "exercise_name_bn": "স্টেশনারি বাইক (হালকা)",
+    "category": "Cardio",
+    "met": 4.5
+  },
+  {
+    "id": 57,
+    "exercise_name_en": "Stationary Bike Intense",
+    "exercise_name_bn": "স্টেশনারি বাইক (তীব্র)",
+    "category": "Cardio",
+    "met": 10.5
+  },
+  {
+    "id": 58,
+    "exercise_name_en": "Jumping Jacks",
+    "exercise_name_bn": "জাম্পিং জ্যাক",
+    "category": "HIIT",
+    "met": 8.0
+  },
+  {
+    "id": 59,
+    "exercise_name_en": "Bear Crawl",
+    "exercise_name_bn": "বিয়ার ক্রল",
+    "category": "HIIT",
+    "met": 8.5
+  },
+  {
+    "id": 60,
+    "exercise_name_en": "Jump Lunges",
+    "exercise_name_bn": "জাম্প লাঞ্জ",
+    "category": "HIIT",
+    "met": 8.5
+  },
+  {
+    "id": 61,
+    "exercise_name_en": "Russian Twist",
+    "exercise_name_bn": "রাশিয়ান টুইস্ট",
+    "category": "Core",
+    "met": 4.0
+  },
+  {
+    "id": 62,
+    "exercise_name_en": "Leg Raises",
+    "exercise_name_bn": "লেগ রেইজ",
+    "category": "Core",
+    "met": 4.5
+  },
+  {
+    "id": 63,
+    "exercise_name_en": "Hanging Leg Raise",
+    "exercise_name_bn": "হ্যাঙ্গিং লেগ রেইজ",
+    "category": "Core",
+    "met": 5.0
+  },
+  {
+    "id": 64,
+    "exercise_name_en": "Bicycle Crunch",
+    "exercise_name_bn": "বাইসাইকেল ক্রাঞ্চ",
+    "category": "Core",
+    "met": 6.0
+  },
+  {
+    "id": 65,
+    "exercise_name_en": "Side Plank",
+    "exercise_name_bn": "সাইড প্ল্যাঙ্ক",
+    "category": "Core",
+    "met": 3.8
+  },
+  {
+    "id": 66,
+    "exercise_name_en": "Cable Crunch",
+    "exercise_name_bn": "ক্যাবল ক্রাঞ্চ",
+    "category": "Core",
+    "met": 4.5
+  },
+  {
+    "id": 67,
+    "exercise_name_en": "Leg Press",
+    "exercise_name_bn": "লেগ প্রেস",
+    "category": "Strength",
+    "met": 5.5
+  },
+  {
+    "id": 68,
+    "exercise_name_en": "Hack Squat",
+    "exercise_name_bn": "হ্যাক স্কোয়াট",
+    "category": "Strength",
+    "met": 6.0
+  },
+  {
+    "id": 69,
+    "exercise_name_en": "Romanian Deadlift",
+    "exercise_name_bn": "রোমানিয়ান ডেডলিফট",
+    "category": "Strength",
+    "met": 6.0
+  },
+  {
+    "id": 70,
+    "exercise_name_en": "Hip Thrust",
+    "exercise_name_bn": "হিপ থ্রাস্ট",
+    "category": "Strength",
+    "met": 5.0
+  },
+  {
+    "id": 71,
+    "exercise_name_en": "Calf Raise",
+    "exercise_name_bn": "ক্যাফ রেইজ",
+    "category": "Strength",
+    "met": 3.5
+  },
+  {
+    "id": 72,
+    "exercise_name_en": "Leg Extension",
+    "exercise_name_bn": "লেগ এক্সটেনশন",
+    "category": "Strength",
+    "met": 3.5
+  },
+  {
+    "id": 73,
+    "exercise_name_en": "Leg Curl",
+    "exercise_name_bn": "লেগ কার্ল",
+    "category": "Strength",
+    "met": 3.5
+  },
+  {
+    "id": 74,
+    "exercise_name_en": "Chest Fly",
+    "exercise_name_bn": "চেস্ট ফ্লাই",
+    "category": "Strength",
+    "met": 4.0
+  },
+  {
+    "id": 75,
+    "exercise_name_en": "Incline Bench Press",
+    "exercise_name_bn": "ইনক্লাইন বেঞ্চ প্রেস",
+    "category": "Strength",
+    "met": 6.0
+  },
+  {
+    "id": 76,
+    "exercise_name_en": "Decline Bench Press",
+    "exercise_name_bn": "ডিক্লাইন বেঞ্চ প্রেস",
+    "category": "Strength",
+    "met": 6.0
+  },
+  {
+    "id": 77,
+    "exercise_name_en": "Dumbbell Press",
+    "exercise_name_bn": "ডাম্বেল প্রেস",
+    "category": "Strength",
+    "met": 5.5
+  },
+  {
+    "id": 78,
+    "exercise_name_en": "Arnold Press",
+    "exercise_name_bn": "আর্নল্ড প্রেস",
+    "category": "Strength",
+    "met": 5.5
+  },
+  {
+    "id": 79,
+    "exercise_name_en": "Lateral Raise",
+    "exercise_name_bn": "ল্যাটারাল রেইজ",
+    "category": "Strength",
+    "met": 3.5
+  },
+  {
+    "id": 80,
+    "exercise_name_en": "Front Raise",
+    "exercise_name_bn": "ফ্রন্ট রেইজ",
+    "category": "Strength",
+    "met": 3.5
+  },
+  {
+    "id": 81,
+    "exercise_name_en": "Face Pull",
+    "exercise_name_bn": "ফেস পুল",
+    "category": "Strength",
+    "met": 3.5
+  },
+  {
+    "id": 82,
+    "exercise_name_en": "Barbell Row",
+    "exercise_name_bn": "বারবেল রো",
+    "category": "Strength",
+    "met": 6.0
+  },
+  {
+    "id": 83,
+    "exercise_name_en": "Seated Row",
+    "exercise_name_bn": "সিটেড রো",
+    "category": "Strength",
+    "met": 4.5
+  },
+  {
+    "id": 84,
+    "exercise_name_en": "T-Bar Row",
+    "exercise_name_bn": "টি-বার রো",
+    "category": "Strength",
+    "met": 5.5
+  },
+  {
+    "id": 85,
+    "exercise_name_en": "Hammer Curl",
+    "exercise_name_bn": "হ্যামার কার্ল",
+    "category": "Strength",
+    "met": 3.5
+  },
+  {
+    "id": 86,
+    "exercise_name_en": "Preacher Curl",
+    "exercise_name_bn": "প্রিচার কার্ল",
+    "category": "Strength",
+    "met": 3.5
+  },
+  {
+    "id": 87,
+    "exercise_name_en": "Concentration Curl",
+    "exercise_name_bn": "কনসেন্ট্রেশন কার্ল",
+    "category": "Strength",
+    "met": 3.5
+  },
+  {
+    "id": 88,
+    "exercise_name_en": "Skull Crusher",
+    "exercise_name_bn": "স্কাল ক্রাশার",
+    "category": "Strength",
+    "met": 4.0
+  },
+  {
+    "id": 89,
+    "exercise_name_en": "Tricep Dip",
+    "exercise_name_bn": "ট্রাইসেপ ডিপ",
+    "category": "Strength",
+    "met": 8.0
+  },
+  {
+    "id": 90,
+    "exercise_name_en": "Chest Dip",
+    "exercise_name_bn": "চেস্ট ডিপ",
+    "category": "Strength",
+    "met": 8.0
+  },
+  {
+    "id": 91,
+    "exercise_name_en": "Farmer Walk",
+    "exercise_name_bn": "ফার্মার ওয়াক",
+    "category": "Strength",
+    "met": 7.0
+  },
+  {
+    "id": 92,
+    "exercise_name_en": "Sled Push",
+    "exercise_name_bn": "স্লেড পুশ",
+    "category": "Strength",
+    "met": 10.0
+  },
+  {
+    "id": 93,
+    "exercise_name_en": "Sled Pull",
+    "exercise_name_bn": "স্লেড পুল",
+    "category": "Strength",
+    "met": 9.0
+  },
+  {
+    "id": 94,
+    "exercise_name_en": "Boxing Training",
+    "exercise_name_bn": "বক্সিং",
+    "category": "Combat Sports",
+    "met": 12.0
+  },
+  {
+    "id": 95,
+    "exercise_name_en": "Kickboxing",
+    "exercise_name_bn": "কিকবক্সিং",
+    "category": "Combat Sports",
+    "met": 11.0
+  },
+  {
+    "id": 96,
+    "exercise_name_en": "Martial Arts",
+    "exercise_name_bn": "মার্শাল আর্ট",
+    "category": "Combat Sports",
+    "met": 10.3
+  },
+  {
+    "id": 97,
+    "exercise_name_en": "Wrestling",
+    "exercise_name_bn": "কুস্তি",
+    "category": "Combat Sports",
+    "met": 8.0
+  },
+  {
+    "id": 98,
+    "exercise_name_en": "Volleyball",
+    "exercise_name_bn": "ভলিবল",
+    "category": "Sports",
+    "met": 4.0
+  },
+  {
+    "id": 99,
+    "exercise_name_en": "Table Tennis",
+    "exercise_name_bn": "টেবিল টেনিস",
+    "category": "Sports",
+    "met": 4.0
+  },
+  {
+    "id": 100,
+    "exercise_name_en": "Handball",
+    "exercise_name_bn": "হ্যান্ডবল",
+    "category": "Sports",
+    "met": 8.0
+  }
+]

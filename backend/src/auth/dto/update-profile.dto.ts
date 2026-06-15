@@ -18,4 +18,7 @@ export class UpdateProfileDto {
 
   @IsIn(['lose_slow', 'lose_aggressive', 'maintain', 'gain'])
   goal: string;
+
+  @IsIn(['sedentary', 'lightly_active', 'moderately_active', 'very_active', 'extra_active'])
+  activity_level: string;
 }

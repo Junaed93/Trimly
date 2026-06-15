@@ -11,6 +11,8 @@ import { logWeight, getWeightLogs, getProfile } from '../../services/api';
 import { getDailyCalories, getTodayString } from '../../services/foodStorage';
 import { getUserStats } from '../../services/userStatsStorage';
 
+import { getDailyExerciseLogs } from '../../services/exerciseStorage';
+
 export default function HomeScreen() {
   const { theme } = useTheme();
   const { width } = useWindowDimensions();
@@ -22,6 +24,7 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [consumedCalories, setConsumedCalories] = useState(0);
+  const [burnedCalories, setBurnedCalories] = useState(0);
   const [userStats, setUserStats] = useState<any>({ initialWeight: null, targetWeight: null });
 
   const fetchDashboardData = async () => {
@@ -42,8 +45,13 @@ export default function HomeScreen() {
   };
 
   const loadCalories = async () => {
-    const cals = await getDailyCalories(getTodayString());
+    const today = getTodayString();
+    const [cals, exerciseData] = await Promise.all([
+      getDailyCalories(today),
+      getDailyExerciseLogs()
+    ]);
     setConsumedCalories(cals);
+    setBurnedCalories(exerciseData.total_calories_burned);
   };
 
   useFocusEffect(
@@ -111,7 +119,8 @@ export default function HomeScreen() {
 
   // Calculate Calorie Stats
   const totalCaloriesAllowed = profile?.daily_calorie_target || 2000;
-  const caloriesRemaining = totalCaloriesAllowed - consumedCalories;
+  const netCalories = consumedCalories - burnedCalories;
+  const caloriesRemaining = totalCaloriesAllowed - netCalories;
 
   return (
     <GlassBackground>
@@ -190,33 +199,44 @@ export default function HomeScreen() {
               </View>
             </View>
 
-            {/* Bottom Section: Calorie Intake */}
+              {/* Bottom Section: Calorie Intake */}
             <View style={[styles.glassCard, { backgroundColor: 'rgba(255, 255, 255, 0.1)', borderColor: 'rgba(255, 255, 255, 0.2)', marginTop: 16 }]}>
               <View style={styles.cardHeader}>
                 <View style={[styles.iconBox, { backgroundColor: theme.accentSurface }]}>
                   <Ionicons name="restaurant-outline" size={24} color={theme.accentLight} />
                 </View>
-                <Text style={[styles.cardTitle, { color: theme.text }]}>Today's Calories</Text>
+                <Text style={[styles.cardTitle, { color: theme.text }]}>Today's Summary</Text>
               </View>
               
               <View style={styles.calorieRow}>
                 <View style={styles.calorieCol}>
                    <Text style={[styles.calorieValue, { color: theme.text }]}>{totalCaloriesAllowed}</Text>
-                   <Text style={[styles.calorieLabel, { color: theme.textMuted }]}>Goal</Text>
+                   <Text style={[styles.calorieLabel, { color: theme.textMuted }]}>Target</Text>
                 </View>
                 <View style={styles.calorieOperator}>
-                   <Text style={{ color: theme.textMuted, fontSize: 24 }}>-</Text>
+                   <Text style={{ color: theme.textMuted, fontSize: 18 }}>-</Text>
                 </View>
                 <View style={styles.calorieCol}>
                    <Text style={[styles.calorieValue, { color: theme.error }]}>{consumedCalories}</Text>
-                   <Text style={[styles.calorieLabel, { color: theme.textMuted }]}>Food (Eaten)</Text>
+                   <Text style={[styles.calorieLabel, { color: theme.textMuted }]}>Consumed</Text>
                 </View>
                 <View style={styles.calorieOperator}>
-                   <Text style={{ color: theme.textMuted, fontSize: 24 }}>=</Text>
+                   <Text style={{ color: theme.textMuted, fontSize: 18 }}>+</Text>
                 </View>
                 <View style={styles.calorieCol}>
-                   <Text style={[styles.calorieValue, { color: theme.success }]}>{Math.max(0, caloriesRemaining)}</Text>
-                   <Text style={[styles.calorieLabel, { color: theme.textMuted }]}>Remaining</Text>
+                   <Text style={[styles.calorieValue, { color: theme.accentLight }]}>{burnedCalories}</Text>
+                   <Text style={[styles.calorieLabel, { color: theme.textMuted }]}>Burned</Text>
+                </View>
+              </View>
+
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 24, paddingTop: 16, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)' }}>
+                <View>
+                  <Text style={[styles.calorieLabel, { color: theme.textMuted, marginBottom: 4 }]}>Net Calories</Text>
+                  <Text style={[styles.calorieValue, { color: theme.text, fontSize: 24 }]}>{netCalories}</Text>
+                </View>
+                <View style={{ alignItems: 'flex-end' }}>
+                  <Text style={[styles.calorieLabel, { color: theme.textMuted, marginBottom: 4 }]}>Remaining</Text>
+                  <Text style={[styles.calorieValue, { color: theme.success, fontSize: 24 }]}>{Math.max(0, caloriesRemaining)}</Text>
                 </View>
               </View>
             </View>

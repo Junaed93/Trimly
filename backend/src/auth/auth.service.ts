@@ -18,6 +18,7 @@ export class AuthService {
     height: number,
     age: number,
     gender: string,
+    activity_level: string,
     goal: string,
   ): number {
     let bmr: number;
@@ -26,7 +27,17 @@ export class AuthService {
     } else {
       bmr = 10 * weight + 6.25 * height - 5 * age - 161;
     }
-    const tdee = bmr * 1.2;
+    
+    let activityMultiplier = 1.2; // sedentary
+    switch (activity_level) {
+      case 'lightly_active': activityMultiplier = 1.375; break;
+      case 'moderately_active': activityMultiplier = 1.55; break;
+      case 'very_active': activityMultiplier = 1.725; break;
+      case 'extra_active': activityMultiplier = 1.9; break;
+    }
+
+    const tdee = bmr * activityMultiplier;
+    
     switch (goal) {
       case 'lose_slow':       return Math.round(tdee - 500);
       case 'lose_aggressive': return Math.round(tdee - 800);
@@ -104,7 +115,7 @@ export class AuthService {
 
   async getProfile(userId: number) {
     const users = await this.db.query(
-      'SELECT id, name, email, age, gender, height_cm, weight_kg, goal, daily_calorie_target, created_at, provider FROM users WHERE id = ?',
+      'SELECT id, name, email, age, gender, height_cm, weight_kg, goal, daily_calorie_target, activity_level, created_at, provider FROM users WHERE id = ?',
       [userId],
     );
     if (!Array.isArray(users) || users.length === 0) {
@@ -119,11 +130,12 @@ export class AuthService {
       dto.height_cm,
       dto.age,
       dto.gender,
+      dto.activity_level || 'sedentary',
       dto.goal,
     );
     await this.db.query(
-      `UPDATE users SET age = ?, gender = ?, height_cm = ?, weight_kg = ?, goal = ?, daily_calorie_target = ? WHERE id = ?`,
-      [dto.age, dto.gender, dto.height_cm, dto.weight_kg, dto.goal, dailyCalorieTarget, userId],
+      `UPDATE users SET age = ?, gender = ?, height_cm = ?, weight_kg = ?, goal = ?, activity_level = ?, daily_calorie_target = ? WHERE id = ?`,
+      [dto.age, dto.gender, dto.height_cm, dto.weight_kg, dto.goal, dto.activity_level || 'sedentary', dailyCalorieTarget, userId],
     );
     return { message: 'Profile updated successfully', daily_calorie_target: dailyCalorieTarget };
   }
