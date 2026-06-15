@@ -41,8 +41,8 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
     let icon: any = 'Home';
     if (route.name === 'home') { title = 'Home'; icon = 'Home'; }
     else if (route.name === 'food') { title = 'Food'; icon = 'Utensils'; }
-    else if (route.name === 'calorie') { title = 'Calorie'; icon = 'Flame'; }
-    else if (route.name === 'exercise') { title = 'Exercise'; icon = 'Dumbbell'; }
+    else if (route.name === 'calorie') { title = 'Weight'; icon = 'Scale'; }
+    else if (route.name === 'exercise') { title = 'Workout'; icon = 'Dumbbell'; }
     else if (route.name === 'profile') { title = 'Profile'; icon = 'User'; }
 
     return {
@@ -76,8 +76,8 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
           const IconComponent = (Icons as any)[route.icon] || Icons.HelpCircle;
           return (
             <TouchableOpacity key={route.key} style={styles.webTabItem} onPress={() => onChange(index)}>
-              <IconComponent size={22} color={isActive ? theme.accentLight : theme.textMuted} />
-              <Text style={{ fontSize: 10, marginTop: 4, color: isActive ? theme.accentLight : theme.textMuted }}>{route.title}</Text>
+              <IconComponent size={22} color={isActive ? theme.primary : theme.textMuted} />
+              <Text style={{ fontSize: 10, marginTop: 4, color: isActive ? theme.primary : theme.textMuted }}>{route.title}</Text>
             </TouchableOpacity>
           );
         })}
@@ -91,7 +91,7 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
         routes={routes}
         activeIndex={Math.max(0, activeIndex)}
         onChange={onChange}
-        activeColor={theme.accentLight}
+        activeColor={theme.primary}
         inactiveColor={theme.textMuted}
       />
     </View>

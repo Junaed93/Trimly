@@ -1,24 +1,18 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { View, Text, StyleSheet, Platform, ScrollView, FlatList, TouchableOpacity, Alert, Modal } from 'react-native';
+import React, { useState, useCallback, useMemo } from 'react';
+import { View, Text, StyleSheet, Platform, ScrollView, FlatList, TouchableOpacity, Modal, TextInput, KeyboardAvoidingView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Icons from 'lucide-react-native';
 import { useFocusEffect } from 'expo-router';
+import Animated, { FadeInUp, FadeIn, SlideInDown, Layout } from 'react-native-reanimated';
 import GlassBackground from '../../components/GlassBackground';
-import AppHeader from './_AppHeader';
-import Input from '../../components/Input';
-import Button from '../../components/Button';
+import AppCard from '../../components/AppCard';
+import SectionHeader from '../../components/SectionHeader';
 import { useTheme } from '../../context/ThemeContext';
 import foodsData from '../../assets/data/foods.json';
 import { getProfile } from '../../services/api';
 import { getDailyCalories, getTodayString, logFoodItem, getDailyFoodLogs, FoodLog } from '../../services/foodStorage';
 
 type MealKey = 'breakfast' | 'lunch' | 'snacks' | 'dinner';
-
-const MEALS: { key: MealKey; label: string; hint: string }[] = [
-  { key: 'breakfast', label: 'Breakfast', hint: 'First meal of the day' },
-  { key: 'lunch', label: 'Lunch', hint: 'Midday fuel' },
-  { key: 'snacks', label: 'Snacks', hint: 'Small bites between meals' },
-  { key: 'dinner', label: 'Dinner', hint: 'Evening meal' },
-];
 
 interface FoodItem {
   id: number;
@@ -29,6 +23,7 @@ interface FoodItem {
   protein_g: number;
   fat_g: number;
   carbs_g: number;
+  category?: string;
 }
 
 export default function FoodScreen() {
@@ -41,11 +36,16 @@ export default function FoodScreen() {
   const [selectedMeal, setSelectedMeal] = useState<MealKey>('breakfast');
   const [selectedDate, setSelectedDate] = useState(getTodayString());
 
-  // Modals Visibility
-  const [searchModalVisible, setSearchModalVisible] = useState(false);
-  const [mealSelectionModalVisible, setMealSelectionModalVisible] = useState(false);
+  // Search Flow State
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string>('All');
+  
+  // Logging Modal State
   const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
-  const [quantityInput, setQuantityInput] = useState('100');
+  const [quantityInput, setQuantityInput] = useState('1');
+  const [isGrams, setIsGrams] = useState(false);
+
+  const categories = ['All', 'Popular', 'Rice', 'Curry', 'Snacks', 'Sweets'];
 
   const fetchData = async () => {
     try {
@@ -60,15 +60,13 @@ export default function FoodScreen() {
     const cals = await getDailyCalories(selectedDate);
     const logs = await getDailyFoodLogs(selectedDate);
     setConsumedCalories(cals);
-    setTodayLogs(
-      logs.map((log: any) => ({
-        ...log,
-        meal: log.meal || 'snacks',
-        protein_g: Number(log.protein_g || 0),
-        carbs_g: Number(log.carbs_g || 0),
-        fat_g: Number(log.fat_g || 0),
-      })),
-    );
+    setTodayLogs(logs.map((log: any) => ({
+      ...log,
+      meal: log.meal || 'snacks',
+      protein_g: Number(log.protein_g || 0),
+      carbs_g: Number(log.carbs_g || 0),
+      fat_g: Number(log.fat_g || 0),
+    })));
   };
 
   useFocusEffect(
@@ -78,39 +76,35 @@ export default function FoodScreen() {
     }, [selectedDate])
   );
 
-  const openAddModal = (food: FoodItem) => {
+  const openLoggingModal = (food: FoodItem) => {
     setSelectedFood(food);
-    if (food.serving_size.includes('100g')) {
-      setQuantityInput('100');
-    } else {
-      setQuantityInput('1');
-    }
+    const usesGrams = food.serving_size.includes('100g');
+    setIsGrams(usesGrams);
+    setQuantityInput(usesGrams ? '100' : '1');
   };
 
   const confirmLogFood = async () => {
     if (!selectedFood) return;
     
     const qty = parseFloat(quantityInput);
-    if (isNaN(qty) || qty <= 0) {
-      Alert.alert('Error', 'Please enter a valid quantity.');
-      return;
-    }
+    if (isNaN(qty) || qty <= 0) return;
 
     let calculatedCalories = 0;
     let unitLabel = '';
 
-    if (selectedFood.serving_size.includes('100g')) {
+    if (isGrams) {
       calculatedCalories = (qty / 100) * selectedFood.calories;
       unitLabel = 'g';
     } else {
       calculatedCalories = qty * selectedFood.calories;
       const match = selectedFood.serving_size.match(/[a-zA-Z]+/);
       unitLabel = match ? match[0] : 'serving';
-      if (qty > 1) unitLabel += 's';
+      if (qty > 1 && !unitLabel.endsWith('s')) unitLabel += 's';
     }
 
+    const factor = isGrams ? qty / 100 : qty;
+
     try {
-      const factor = selectedFood.serving_size.includes('100g') ? qty / 100 : qty;
       await logFoodItem(selectedDate, {
         meal: selectedMeal,
         foodName: selectedFood.food_name_en,
@@ -123,397 +117,253 @@ export default function FoodScreen() {
       });
       loadLogs();
       setSelectedFood(null);
-      setSearchModalVisible(false); // Close search flow on success
+      setIsSearchActive(false);
       setSearchQuery('');
     } catch (e) {
-      Alert.alert('Error', 'Failed to log food');
+      console.log('Failed to log food', e);
     }
   };
 
-  const filteredFoods = (foodsData as FoodItem[]).filter(food => 
-    food.food_name_en.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    food.food_name_bn.includes(searchQuery)
-  );
+  const filteredFoods = useMemo(() => {
+    if (!searchQuery && !isSearchActive) return [];
+    let list = foodsData as FoodItem[];
+    if (searchQuery) {
+      list = list.filter(f => 
+        f.food_name_en.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        f.food_name_bn.includes(searchQuery)
+      );
+    }
+    // Very basic client-side category mock
+    if (activeCategory !== 'All' && !searchQuery) {
+      list = list.slice(0, 10); // Mocking category filter
+    }
+    return list;
+  }, [searchQuery, isSearchActive, activeCategory]);
 
   const totalAllowed = profile?.daily_calorie_target || 2000;
   const remaining = totalAllowed - consumedCalories;
 
-  const getMealLogs = (meal: MealKey) =>
-    todayLogs.filter((log) => ((log.meal as MealKey) || 'snacks') === meal);
-
-  const getMealTotals = (mealLogs: FoodLog[]) =>
-    mealLogs.reduce(
-      (totals, log) => ({
-        calories: totals.calories + Number(log.calories || 0),
-        protein_g: totals.protein_g + Number(log.protein_g || 0),
-        carbs_g: totals.carbs_g + Number(log.carbs_g || 0),
-        fat_g: totals.fat_g + Number(log.fat_g || 0),
-      }),
-      { calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0 },
-    );
-
-  const getMealLabel = (meal: MealKey) => MEALS.find((item) => item.key === meal)?.label || meal;
-
-  // Calculate dynamic macros in detail modal
-  const getCalculatedNutrition = () => {
-    if (!selectedFood) return { calories: 0, protein: 0, carbs: 0, fat: 0 };
-    const q = parseFloat(quantityInput) || 0;
-    const isGrams = selectedFood.serving_size.includes('100g');
-    const factor = isGrams ? q / 100 : q;
-
-    return {
-      calories: Math.round(selectedFood.calories * factor),
-      protein: parseFloat((selectedFood.protein_g * factor).toFixed(1)),
-      carbs: parseFloat((selectedFood.carbs_g * factor).toFixed(1)),
-      fat: parseFloat((selectedFood.fat_g * factor).toFixed(1)),
-    };
-  };
-
-  const calculated = getCalculatedNutrition();
-  const caloriesRemainingAfterLog = remaining - calculated.calories;
-
-  const renderFoodItem = ({ item }: { item: FoodItem }) => (
-    <View style={[styles.foodCard, { backgroundColor: 'rgba(255, 255, 255, 0.05)', borderColor: 'rgba(255, 255, 255, 0.1)' }]}>
-      <View style={{ flex: 1, marginRight: 12 }}>
-        <Text style={[styles.foodName, { color: theme.text }]}>
-          {item.food_name_en} <Text style={{ fontSize: 13, fontWeight: '400', color: theme.textSecondary }}>({item.food_name_bn})</Text>
-        </Text>
-        <Text style={{ fontSize: 12, color: theme.textMuted, marginTop: 4 }}>
-          {item.calories} kcal per {item.serving_size}
-        </Text>
-      </View>
+  const renderFoodCard = ({ item, index }: { item: FoodItem, index: number }) => (
+    <Animated.View entering={FadeInUp.delay(index * 50).springify()}>
       <TouchableOpacity 
-        style={[styles.addBtn, { backgroundColor: theme.accentSurface }]} 
-        onPress={() => openAddModal(item)}
+        style={[styles.foodCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
+        onPress={() => openLoggingModal(item)}
       >
-        <Ionicons name="add" size={20} color={theme.accentLight} />
+        <View style={[styles.foodImagePlaceholder, { backgroundColor: theme.border }]}>
+          <Icons.Utensils size={24} color={theme.textMuted} />
+        </View>
+        <View style={styles.foodCardContent}>
+          <Text style={[styles.foodName, { color: theme.text }]} numberOfLines={1}>
+            {item.food_name_en}
+          </Text>
+          <Text style={[styles.foodServing, { color: theme.textMuted }]}>
+            {item.calories} kcal / {item.serving_size}
+          </Text>
+          <View style={styles.macroBadges}>
+            <Text style={[styles.macroText, { color: theme.primary }]}>P: {item.protein_g}g</Text>
+            <Text style={[styles.macroText, { color: theme.secondary }]}>C: {item.carbs_g}g</Text>
+            <Text style={[styles.macroText, { color: theme.warning }]}>F: {item.fat_g}g</Text>
+          </View>
+        </View>
+        <View style={[styles.addBtn, { backgroundColor: theme.primarySurface }]}>
+          <Ionicons name="add" size={20} color={theme.primary} />
+        </View>
       </TouchableOpacity>
-    </View>
+    </Animated.View>
   );
 
-  const openMealLogger = (meal: MealKey) => {
-    setSelectedMeal(meal);
-    setSearchQuery('');
-    setMealSelectionModalVisible(false);
-    setSearchModalVisible(true);
-  };
-
-  const openMealSelection = () => {
-    setMealSelectionModalVisible(true);
-  };
-
-  const toggleMealSection = (meal: MealKey) => {
-    setSelectedMeal(meal);
-  };
-
-  const renderMealSection = (meal: { key: MealKey; label: string; hint: string }) => {
-    const mealLogs = getMealLogs(meal.key);
-    const totals = getMealTotals(mealLogs);
-
-    return (
-      <TouchableOpacity
-        key={meal.key}
-        style={[
-          styles.mealSummaryCard,
-          {
-            backgroundColor: selectedMeal === meal.key ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.05)',
-            borderColor: selectedMeal === meal.key ? theme.accentBorder : 'rgba(255,255,255,0.1)',
-          },
-        ]}
-        onPress={() => toggleMealSection(meal.key)}
-      >
-        <View style={styles.mealSectionHeader}>
-          <View style={{ flex: 1, paddingRight: 12 }}>
-            <Text style={[styles.mealSectionTitle, { color: theme.text }]}>{meal.label}</Text>
-            <Text style={[styles.mealSectionSubtitle, { color: theme.textMuted }]}>{meal.hint}</Text>
-          </View>
-
-          <TouchableOpacity
-            style={[styles.mealLogBtn, { backgroundColor: theme.accentSurface, borderColor: theme.accentBorder }]}
-            onPress={() => openMealLogger(meal.key)}
-          >
-            <Ionicons name="add" size={16} color={theme.accentLight} />
-          </TouchableOpacity>
-        </View>
-
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
-          <Text style={[styles.mealSectionTotal, { color: theme.accentLight }]}>{totals.calories} kcal</Text>
-          <Text style={[styles.mealSectionMeta, { color: theme.textMuted }]}>{mealLogs.length} items</Text>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  const renderSelectedMealDetails = (mealKey: MealKey) => {
-    const meal = MEALS.find((item) => item.key === mealKey);
-    if (!meal) return null;
-
-    const mealLogs = getMealLogs(mealKey);
-    const totals = getMealTotals(mealLogs);
-
-    return (
-      <View style={[styles.mealDetailsPanel, { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: theme.accentBorder }]}>
-        <View style={styles.mealSectionHeader}>
-          <View style={{ flex: 1, paddingRight: 12 }}>
-            <Text style={[styles.mealSectionTitle, { color: theme.text }]}>{meal.label}</Text>
-            <Text style={[styles.mealSectionSubtitle, { color: theme.textMuted }]}>{meal.hint}</Text>
-          </View>
-          <TouchableOpacity
-            style={[styles.mealLogBtn, { backgroundColor: theme.accentSurface, borderColor: theme.accentBorder }]}
-            onPress={() => openMealLogger(meal.key)}
-          >
-            <Ionicons name="add" size={16} color={theme.accentLight} />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.macroRow}>
-          <Text style={[styles.macroText, { color: theme.textSecondary }]}>P {totals.protein_g.toFixed(1)}g</Text>
-          <Text style={[styles.macroText, { color: theme.textSecondary }]}>C {totals.carbs_g.toFixed(1)}g</Text>
-          <Text style={[styles.macroText, { color: theme.textSecondary }]}>F {totals.fat_g.toFixed(1)}g</Text>
-        </View>
-
-        {mealLogs.length > 0 ? (
-          mealLogs.map((item) => (
-            <View key={item.id} style={[styles.mealItemRow, { borderBottomColor: theme.border }]}>
-              <View style={{ flex: 1, paddingRight: 12 }}>
-                <Text style={[styles.logName, { color: theme.text }]}>{item.foodName}</Text>
-                <Text style={[styles.logQty, { color: theme.textMuted }]}>
-                  {item.quantity} {item.unit} • {item.time}
-                </Text>
-                <Text style={[styles.logMacroLine, { color: theme.textMuted }]}>
-                  P {Number(item.protein_g || 0).toFixed(1)}g · C {Number(item.carbs_g || 0).toFixed(1)}g · F {Number(item.fat_g || 0).toFixed(1)}g
-                </Text>
-              </View>
-              <Text style={[styles.logCals, { color: theme.accentLight }]}>{item.calories} kcal</Text>
-            </View>
-          ))
-        ) : (
-          <View style={styles.emptyMealRow}>
-            <Text style={[styles.placeholderText, { color: theme.textMuted }]}>No items logged for {meal.label.toLowerCase()}.</Text>
-          </View>
-        )}
-      </View>
-    );
-  };
+  const calculatedNutrition = useMemo(() => {
+    if (!selectedFood) return null;
+    const q = parseFloat(quantityInput) || 0;
+    const factor = isGrams ? q / 100 : q;
+    return {
+      cals: Math.round(selectedFood.calories * factor),
+      p: (selectedFood.protein_g * factor).toFixed(1),
+      c: (selectedFood.carbs_g * factor).toFixed(1),
+      f: (selectedFood.fat_g * factor).toFixed(1),
+    };
+  }, [selectedFood, quantityInput, isGrams]);
 
   return (
     <GlassBackground>
-      <AppHeader />
-      <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <Text style={[styles.title, { color: theme.text, marginBottom: 0 }]}>Food Log</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <TouchableOpacity onPress={() => {
-              const d = new Date(selectedDate);
-              d.setDate(d.getDate() - 1);
-              setSelectedDate(d.toISOString().split('T')[0]);
-            }} style={{ padding: 8 }}>
-              <Ionicons name="chevron-back" size={24} color={theme.text} />
-            </TouchableOpacity>
-            <Text style={{ fontSize: 16, fontWeight: '600', color: theme.text, marginHorizontal: 8 }}>
-              {selectedDate === getTodayString() ? 'Today' : selectedDate}
-            </Text>
-            <TouchableOpacity onPress={() => {
-              const d = new Date(selectedDate);
-              d.setDate(d.getDate() + 1);
-              setSelectedDate(d.toISOString().split('T')[0]);
-            }} style={{ padding: 8 }}>
-              <Ionicons name="chevron-forward" size={24} color={theme.text} />
-            </TouchableOpacity>
+      <View style={styles.container}>
+        {/* Header */}
+        <Animated.View entering={FadeInUp} style={styles.header}>
+          <Text style={[styles.title, { color: theme.text }]}>Log Food</Text>
+          <View style={[styles.dateSelector, { backgroundColor: theme.surface }]}>
+            <Text style={[styles.dateText, { color: theme.text }]}>{selectedDate === getTodayString() ? 'Today' : selectedDate}</Text>
           </View>
-        </View>
-        
-        {/* Calorie Summary Banner */}
-        <View style={[styles.summaryBanner, { backgroundColor: 'rgba(255, 255, 255, 0.1)', borderColor: 'rgba(255, 255, 255, 0.2)' }]}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <View>
-              <Text style={[styles.summaryLabel, { color: theme.textMuted }]}>Calories Remaining</Text>
-              <Text style={[styles.summaryValue, { color: remaining >= 0 ? theme.success : theme.error }]}>
-                {remaining} <Text style={{ fontSize: 16, fontWeight: '600' }}>kcal</Text>
-              </Text>
-            </View>
-            <TouchableOpacity
-              style={[styles.compactLogBtn, { backgroundColor: theme.accentSurface, borderColor: theme.accentBorder }]}
-              onPress={openMealSelection}
-            >
-              <Ionicons name="restaurant" size={16} color={theme.accentLight} />
-              <Text style={[styles.compactLogBtnText, { color: theme.text }]}>Log Meal</Text>
-              <Ionicons name="chevron-forward" size={16} color={theme.textMuted} />
-            </TouchableOpacity>
-          </View>
-        </View>
+        </Animated.View>
 
-        <View style={{ flex: 1, marginTop: 24 }}>
-          <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>Meal Breakdown</Text>
-          {todayLogs.length > 0 ? (
-            <View style={styles.mealBreakdownGrid}>
-              {MEALS.map(renderMealSection)}
-            </View>
-          ) : (
-            <View style={styles.placeholderContainer}>
-              <Ionicons name="cafe-outline" size={48} color={theme.textMuted} />
-              <Text style={[styles.placeholderText, { color: theme.textMuted }]}>No meals logged today yet.</Text>
-            </View>
+        {/* Search Bar */}
+        <Animated.View entering={FadeInUp.delay(100)} style={[styles.searchBar, { backgroundColor: theme.surface, borderColor: isSearchActive ? theme.primary : theme.border }]}>
+          <Icons.Search size={20} color={isSearchActive ? theme.primary : theme.textMuted} style={{ marginRight: 12 }} />
+          <TextInput
+            style={[styles.searchInput, { color: theme.text }]}
+            placeholder="Search for any food..."
+            placeholderTextColor={theme.textPlaceholder}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            onFocus={() => setIsSearchActive(true)}
+          />
+          {isSearchActive && (
+            <TouchableOpacity onPress={() => { setIsSearchActive(false); setSearchQuery(''); }}>
+              <Icons.X size={20} color={theme.textMuted} />
+            </TouchableOpacity>
           )}
+        </Animated.View>
 
-          {selectedMeal ? renderSelectedMealDetails(selectedMeal) : null}
-        </View>
-      </ScrollView>
-
-      {/* MEAL SELECTION MODAL */}
-      <Modal visible={mealSelectionModalVisible} transparent animationType="fade">
-        <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
-          <View style={[styles.mealSelectionContent, { backgroundColor: theme.bg, borderColor: theme.border }]}>
-            <Text style={[styles.mealSelectionTitle, { color: theme.text }]}>Select a Meal</Text>
-            
-            <View style={styles.mealSelectionGrid}>
-              {MEALS.map((meal) => (
-                <TouchableOpacity
-                  key={meal.key}
-                  style={[styles.mealSelectionCard, { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: theme.border }]}
-                  onPress={() => openMealLogger(meal.key)}
+        {isSearchActive ? (
+          <>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll} contentContainerStyle={{ paddingRight: 16 }}>
+              {categories.map((cat, i) => (
+                <TouchableOpacity 
+                  key={i} 
+                  style={[styles.categoryChip, { backgroundColor: activeCategory === cat ? theme.primary : theme.surface, borderColor: activeCategory === cat ? theme.primary : theme.border }]}
+                  onPress={() => setActiveCategory(cat)}
                 >
-                  <Ionicons 
-                    name={meal.key === 'breakfast' ? 'cafe-outline' : meal.key === 'lunch' ? 'restaurant-outline' : meal.key === 'dinner' ? 'moon-outline' : 'fast-food-outline'} 
-                    size={32} 
-                    color={theme.accentLight} 
-                  />
-                  <Text style={[styles.mealSelectionLabel, { color: theme.text }]}>{meal.label}</Text>
-                  <Text style={[styles.mealSelectionHint, { color: theme.textMuted }]}>{meal.hint}</Text>
+                  <Text style={{ color: activeCategory === cat ? '#fff' : theme.text, fontWeight: '600' }}>{cat}</Text>
                 </TouchableOpacity>
               ))}
-            </View>
-
-            <TouchableOpacity
-              style={{ marginTop: 16 }}
-              onPress={() => setMealSelectionModalVisible(false)}
-            >
-              <Text style={{ color: theme.accentLight, textAlign: 'center', fontWeight: '600' }}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      {/* SEARCH FOOD MODAL */}
-      <Modal visible={searchModalVisible} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={[styles.fullModalContent, { backgroundColor: theme.bg }]}>
-            <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: theme.text }]}>Search Food</Text>
-              <TouchableOpacity style={styles.closeBtn} onPress={() => { setSearchModalVisible(false); setSearchQuery(''); }}>
-                <Ionicons name="close" size={24} color={theme.textSecondary} />
-              </TouchableOpacity>
-            </View>
-
-            <View style={{ marginBottom: 16 }}>
-              <Input 
-                label=""
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                placeholder="Type rice, egg, fish, sweet..."
-                icon="search-outline"
-              />
-            </View>
-
+            </ScrollView>
             <FlatList
               data={filteredFoods}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={renderFoodItem}
-              initialNumToRender={20}
+              keyExtractor={item => item.id.toString()}
+              renderItem={renderFoodCard}
+              contentContainerStyle={{ paddingBottom: 100 }}
               showsVerticalScrollIndicator={false}
-              ListEmptyComponent={
-                <Text style={{ color: theme.textSecondary, textAlign: 'center', marginTop: 24 }}>No matches found</Text>
-              }
+              keyboardShouldPersistTaps="handled"
             />
-          </View>
-        </View>
-      </Modal>
+          </>
+        ) : (
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+            <Animated.View entering={FadeInUp.delay(200)}>
+              <AppCard variant="glass" style={styles.remainingCard}>
+                <Text style={[styles.remainingLabel, { color: theme.textMuted }]}>Calories Remaining</Text>
+                <Text style={[styles.remainingValue, { color: remaining >= 0 ? theme.primary : theme.error }]}>
+                  {remaining} <Text style={{ fontSize: 16, fontWeight: '600' }}>kcal</Text>
+                </Text>
+              </AppCard>
+            </Animated.View>
 
-      {/* DETAIL & ADD MODAL */}
-      <Modal visible={!!selectedFood} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-           <View style={[styles.modalContent, { backgroundColor: theme.bg, borderColor: theme.border }]}>
-              {selectedFood ? (
-                <>
-                  <View style={styles.modalHeader}>
-                    <Text style={[styles.modalTitle, { color: theme.text, fontSize: 20 }]}>{selectedFood.food_name_en}</Text>
-                    <TouchableOpacity onPress={() => setSelectedFood(null)}>
-                      <Ionicons name="close" size={24} color={theme.textMuted} />
-                    </TouchableOpacity>
-                  </View>
-                  <Text style={{ color: theme.textSecondary, fontSize: 13, marginTop: -4, marginBottom: 16 }}>({selectedFood.food_name_bn})</Text>
+            {['breakfast', 'lunch', 'dinner', 'snacks'].map((mealKey, idx) => {
+              const logs = todayLogs.filter(l => l.meal === mealKey);
+              const cals = logs.reduce((sum, l) => sum + (l.calories || 0), 0);
+              return (
+                <Animated.View key={mealKey} entering={FadeInUp.delay(300 + idx * 50)}>
+                  <View style={[styles.mealSection, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                    <View style={styles.mealHeader}>
+                      <View>
+                        <Text style={[styles.mealTitle, { color: theme.text }]} style={{textTransform: 'capitalize', fontSize: 18, fontWeight: '800', color: theme.text}}>{mealKey}</Text>
+                        <Text style={[styles.mealCals, { color: theme.primary }]}>{cals} kcal</Text>
+                      </View>
+                      <TouchableOpacity 
+                        style={[styles.quickAddBtn, { backgroundColor: theme.primarySurface }]}
+                        onPress={() => { setSelectedMeal(mealKey as MealKey); setIsSearchActive(true); }}
+                      >
+                        <Icons.Plus size={20} color={theme.primary} />
+                      </TouchableOpacity>
+                    </View>
 
-                  <View style={{ marginBottom: 16 }}>
-                    <Text style={[styles.mealPickerLabel, { color: theme.textSecondary }]}>Add to meal</Text>
-                    <View style={styles.mealPickerRow}>
-                      {MEALS.map((meal) => {
-                        const active = selectedMeal === meal.key;
-                        return (
-                          <TouchableOpacity
-                            key={meal.key}
-                            style={[
-                              styles.mealPickerChip,
-                              {
-                                backgroundColor: active ? theme.accentSurface : 'rgba(255,255,255,0.04)',
-                                borderColor: active ? theme.accentBorder : theme.border,
-                              },
-                            ]}
-                            onPress={() => setSelectedMeal(meal.key)}
-                          >
-                            <Text style={{ color: active ? theme.accentLight : theme.text, fontWeight: '700' }}>{meal.label}</Text>
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </View>
+                    {logs.length > 0 ? (
+                      logs.map(log => (
+                        <View key={log.id} style={[styles.logRow, { borderTopColor: theme.border }]}>
+                          <View style={{ flex: 1 }}>
+                            <Text style={[styles.logName, { color: theme.text }]}>{log.foodName}</Text>
+                            <Text style={[styles.logQty, { color: theme.textMuted }]}>{log.quantity} {log.unit}</Text>
+                          </View>
+                          <Text style={[styles.logCalsValue, { color: theme.textSecondary }]}>{log.calories} kcal</Text>
+                        </View>
+                      ))
+                    ) : (
+                      <Text style={[styles.emptyMealText, { color: theme.textMuted }]}>Tap + to log foods.</Text>
+                    )}
                   </View>
-                  
-                  {/* Detailed Nutrition Summary */}
-                  <View style={[styles.nutritionGrid, { borderColor: theme.border }]}>
-                    <View style={styles.nutritionBox}>
-                      <Text style={[styles.nutritionVal, { color: theme.accent }]}>{calculated.calories}</Text>
-                      <Text style={[styles.nutritionLbl, { color: theme.textMuted }]}>Calories</Text>
-                    </View>
-                    <View style={styles.nutritionBox}>
-                      <Text style={[styles.nutritionVal, { color: theme.text }]}>{calculated.protein}g</Text>
-                      <Text style={[styles.nutritionLbl, { color: theme.textMuted }]}>Protein</Text>
-                    </View>
-                    <View style={styles.nutritionBox}>
-                      <Text style={[styles.nutritionVal, { color: theme.text }]}>{calculated.carbs}g</Text>
-                      <Text style={[styles.nutritionLbl, { color: theme.textMuted }]}>Carbs</Text>
-                    </View>
-                    <View style={styles.nutritionBox}>
-                      <Text style={[styles.nutritionVal, { color: theme.text }]}>{calculated.fat}g</Text>
-                      <Text style={[styles.nutritionLbl, { color: theme.textMuted }]}>Fat</Text>
-                    </View>
-                  </View>
+                </Animated.View>
+              );
+            })}
+          </ScrollView>
+        )}
+      </View>
 
-                  <View style={{ marginBottom: 16 }}>
-                     <Input
-                        label={selectedFood.serving_size.includes('100g') ? "Enter Grams" : `Quantity (${selectedFood.serving_size})`}
-                        value={quantityInput}
-                        onChangeText={setQuantityInput}
-                        keyboardType="numeric"
-                        icon="calculator-outline"
-                     />
-                  </View>
-                  
-                  {/* Future remaining calories display */}
-                  <View style={[styles.remainingPreviewBox, { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: theme.border }]}>
-                    <Text style={{ fontSize: 12, fontWeight: '700', color: theme.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 }}>Remaining Calories After Logging</Text>
-                    <Text style={{ fontSize: 24, fontWeight: '800', marginTop: 4, color: caloriesRemainingAfterLog >= 0 ? theme.success : theme.error }}>
-                      {caloriesRemainingAfterLog} kcal
-                    </Text>
-                  </View>
-                  
-                  <View style={{ marginTop: 8 }}>
-                    <Button title="Confirm & Log" onPress={confirmLogFood} />
-                  </View>
-                </>
-              ) : null}
-           </View>
-        </View>
-      </Modal>
+      {/* Fast Logging Modal */}
+      {selectedFood && (
+        <Modal transparent visible animationType="fade">
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay}>
+            <Animated.View entering={SlideInDown.springify()} style={[styles.modalContent, { backgroundColor: theme.surfaceRaised, borderColor: theme.border }]}>
+              <View style={styles.modalHeader}>
+                <Text style={[styles.modalTitle, { color: theme.text }]} numberOfLines={1}>{selectedFood.food_name_en}</Text>
+                <TouchableOpacity onPress={() => setSelectedFood(null)} style={styles.closeBtn}>
+                  <Icons.X size={24} color={theme.textMuted} />
+                </TouchableOpacity>
+              </View>
 
+              {/* Meal Selector */}
+              <View style={styles.mealSelectorRow}>
+                {['breakfast', 'lunch', 'dinner', 'snacks'].map(meal => (
+                  <TouchableOpacity
+                    key={meal}
+                    style={[styles.mealPill, { backgroundColor: selectedMeal === meal ? theme.primary : theme.surface, borderColor: selectedMeal === meal ? theme.primary : theme.border }]}
+                    onPress={() => setSelectedMeal(meal as MealKey)}
+                  >
+                    <Text style={{ color: selectedMeal === meal ? '#fff' : theme.text, fontSize: 12, fontWeight: '700', textTransform: 'capitalize' }}>{meal}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* Quick Quantity */}
+              <View style={styles.qtyContainer}>
+                <TouchableOpacity 
+                  style={[styles.qtyBtn, { backgroundColor: theme.surface, borderColor: theme.border }]}
+                  onPress={() => setQuantityInput(String(Math.max(1, parseFloat(quantityInput || '1') - (isGrams ? 10 : 0.5))))}
+                >
+                  <Icons.Minus size={24} color={theme.text} />
+                </TouchableOpacity>
+                <TextInput
+                  style={[styles.qtyInput, { color: theme.text, backgroundColor: theme.surface, borderColor: theme.border }]}
+                  keyboardType="numeric"
+                  value={quantityInput}
+                  onChangeText={setQuantityInput}
+                  autoFocus
+                  selectTextOnFocus
+                />
+                <TouchableOpacity 
+                  style={[styles.qtyBtn, { backgroundColor: theme.surface, borderColor: theme.border }]}
+                  onPress={() => setQuantityInput(String(parseFloat(quantityInput || '0') + (isGrams ? 10 : 0.5)))}
+                >
+                  <Icons.Plus size={24} color={theme.text} />
+                </TouchableOpacity>
+                <Text style={[styles.qtyUnit, { color: theme.textMuted }]}>{isGrams ? 'g' : 'serving'}</Text>
+              </View>
+
+              {/* Live Macro Preview */}
+              <View style={[styles.livePreviewBox, { backgroundColor: theme.surface }]}>
+                <View style={styles.liveStat}>
+                  <Text style={[styles.liveVal, { color: theme.primary }]}>{calculatedNutrition?.cals}</Text>
+                  <Text style={[styles.liveLbl, { color: theme.textMuted }]}>Kcal</Text>
+                </View>
+                <View style={styles.liveStat}>
+                  <Text style={[styles.liveVal, { color: theme.text }]}>{calculatedNutrition?.p}g</Text>
+                  <Text style={[styles.liveLbl, { color: theme.textMuted }]}>Protein</Text>
+                </View>
+                <View style={styles.liveStat}>
+                  <Text style={[styles.liveVal, { color: theme.text }]}>{calculatedNutrition?.c}g</Text>
+                  <Text style={[styles.liveLbl, { color: theme.textMuted }]}>Carbs</Text>
+                </View>
+                <View style={styles.liveStat}>
+                  <Text style={[styles.liveVal, { color: theme.text }]}>{calculatedNutrition?.f}g</Text>
+                  <Text style={[styles.liveLbl, { color: theme.textMuted }]}>Fat</Text>
+                </View>
+              </View>
+
+              <TouchableOpacity style={[styles.confirmBtn, { backgroundColor: theme.primary }]} onPress={confirmLogFood}>
+                <Text style={styles.confirmBtnText}>Confirm</Text>
+                <Icons.Check size={20} color="#fff" style={{ marginLeft: 8 }} />
+              </TouchableOpacity>
+            </Animated.View>
+          </KeyboardAvoidingView>
+        </Modal>
+      )}
     </GlassBackground>
   );
 }
@@ -522,192 +372,86 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 24,
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: '800',
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 20,
   },
-  subtitle: {
-    fontSize: 14,
-    fontWeight: '500',
-    lineHeight: 20,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: 12,
-  },
-  mealStrip: {
-    display: 'none',
-  },
-  mealChip: {
-    flexBasis: '48%',
-    borderWidth: 1,
-    borderRadius: 18,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-  },
-  mealChipLabel: {
-    fontSize: 14,
+  title: {
+    fontSize: 28,
     fontWeight: '800',
   },
-  mealChipMeta: {
-    fontSize: 11,
-    fontWeight: '600',
-    marginTop: 4,
-  },
-  summaryBanner: {
-    padding: 20,
-    borderRadius: 24,
-    borderWidth: 1,
-    marginBottom: 16,
-  },
-  summaryLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: 4,
-  },
-  summaryValue: {
-    fontSize: 32,
-    fontWeight: '800',
-  },
-  summaryValueSm: {
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  widgetCard: {
-    display: 'none',
-  },
-  widgetIconContainer: {
-    display: 'none',
-  },
-  widgetTitle: {
-    display: 'none',
-  },
-  widgetSubtitle: {
-    display: 'none',
-  },
-  placeholderContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 40,
-  },
-  placeholderText: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginTop: 12,
-  },
-  mealSection: {
-    borderWidth: 1,
-    borderRadius: 22,
-    padding: 16,
-  },
-  mealSectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  mealLogBtn: {
-    width: 30,
-    height: 30,
-    borderWidth: 1,
-    borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 10,
-  },
-  mealSectionTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  mealSectionSubtitle: {
-    fontSize: 12,
-    marginTop: 2,
-  },
-  mealSectionTotal: {
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  mealSectionMeta: {
-    fontSize: 11,
-    fontWeight: '600',
-    marginTop: 2,
-  },
-  mealBreakdownGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginTop: 12,
-  },
-  mealSummaryCard: {
-    width: '48%',
-    borderWidth: 1,
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 12,
-  },
-  mealDetailsPanel: {
-    borderWidth: 1,
-    borderRadius: 20,
-    padding: 16,
-    marginTop: 12,
-  },
-  mealItemRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  compactLogBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    paddingVertical: 9,
+  dateSelector: {
     paddingHorizontal: 12,
-    borderWidth: 1,
-    borderRadius: 999,
-    gap: 8,
-    marginBottom: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
-  compactLogBtnText: {
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  macroRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 12,
-  },
-  macroText: {
-    fontSize: 11,
+  dateText: {
+    fontSize: 14,
     fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
   },
-  emptyMealRow: {
-    paddingVertical: 10,
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    height: 54,
+    borderRadius: 27,
+    borderWidth: 1,
+    marginBottom: 16,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  categoryScroll: {
+    flexGrow: 0,
+    marginBottom: 16,
+  },
+  categoryChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginRight: 8,
   },
   foodCard: {
     flexDirection: 'row',
-    alignItems: 'center',
     padding: 16,
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
     marginBottom: 12,
+    alignItems: 'center',
+  },
+  foodImagePlaceholder: {
+    width: 50,
+    height: 50,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  foodCardContent: {
+    flex: 1,
   },
   foodName: {
     fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  foodServing: {
+    fontSize: 12,
+    marginBottom: 6,
+  },
+  macroBadges: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  macroText: {
+    fontSize: 11,
     fontWeight: '700',
   },
   addBtn: {
@@ -716,172 +460,172 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
+    marginLeft: 12,
   },
-  logContainer: {
-    borderRadius: 20,
+  remainingCard: {
+    padding: 20,
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  remainingLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  remainingValue: {
+    fontSize: 32,
+    fontWeight: '800',
+  },
+  mealSection: {
+    borderRadius: 24,
     borderWidth: 1,
-    paddingHorizontal: 16,
+    padding: 20,
+    marginBottom: 16,
+  },
+  mealHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  mealTitle: {
+    // defined inline
+  },
+  mealCals: {
+    fontSize: 14,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  quickAddBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   logRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 14,
+    paddingVertical: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
   logName: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
   },
   logQty: {
     fontSize: 12,
-    marginTop: 4,
+    marginTop: 2,
   },
-  logMacroLine: {
-    fontSize: 11,
-    fontWeight: '600',
-    marginTop: 4,
-  },
-  logCals: {
-    fontSize: 16,
+  logCalsValue: {
+    fontSize: 15,
     fontWeight: '700',
+  },
+  emptyMealText: {
+    fontSize: 14,
+    fontStyle: 'italic',
+    paddingVertical: 8,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
-    padding: 16,
-  },
-  fullModalContent: {
-    flex: 1,
-    borderRadius: 24,
-    padding: 20,
-    marginTop: Platform.OS === 'ios' ? 44 : 20,
-    marginBottom: 20,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'flex-end',
   },
   modalContent: {
-    padding: 24,
-    borderRadius: 24,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
     borderWidth: 1,
-    maxWidth: 500,
-    width: '100%',
-    alignSelf: 'center',
+    padding: 24,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 20,
   },
   modalTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '800',
-  },
-  mealPickerLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    marginBottom: 10,
-  },
-  mealPickerRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  mealPickerChip: {
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-  },
-  mealPreviewBadge: {
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 14,
+    flex: 1,
+    paddingRight: 16,
   },
   closeBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: 4,
   },
-  nutritionGrid: {
+  mealSelectorRow: {
     flexDirection: 'row',
-    borderWidth: 1,
-    borderRadius: 16,
-    marginBottom: 20,
-    overflow: 'hidden',
+    gap: 8,
+    marginBottom: 24,
   },
-  nutritionBox: {
+  mealPill: {
     flex: 1,
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderRightWidth: StyleSheet.hairlineWidth,
-    borderRightColor: 'rgba(255,255,255,0.1)',
-  },
-  nutritionVal: {
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  nutritionLbl: {
-    fontSize: 10,
-    fontWeight: '700',
-    marginTop: 4,
-    textTransform: 'uppercase',
-  },
-  remainingPreviewBox: {
-    padding: 16,
+    paddingVertical: 10,
     borderRadius: 16,
     borderWidth: 1,
-    marginBottom: 20,
     alignItems: 'center',
   },
-  mealSelectionContent: {
-    borderRadius: 24,
-    borderWidth: 1,
-    padding: 24,
-    maxWidth: 500,
-    width: '100%',
-    alignSelf: 'center',
-  },
-  mealSelectionTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  mealSelectionGrid: {
+  qtyContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: 16,
+    alignItems: 'center',
+    marginBottom: 24,
   },
-  mealSelectionCard: {
-    width: '48%',
-    flexGrow: 0,
-    flexShrink: 0,
-    marginBottom: 12,
-    borderRadius: 16,
+  qtyBtn: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     borderWidth: 1,
-    padding: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  mealSelectionLabel: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginTop: 12,
+  qtyInput: {
+    flex: 1,
+    height: 50,
+    marginHorizontal: 12,
+    borderRadius: 16,
+    borderWidth: 1,
     textAlign: 'center',
+    fontSize: 20,
+    fontWeight: '800',
   },
-  mealSelectionHint: {
-    fontSize: 12,
+  qtyUnit: {
+    fontSize: 16,
+    fontWeight: '600',
+    width: 60,
+  },
+  livePreviewBox: {
+    flexDirection: 'row',
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 24,
+    justifyContent: 'space-between',
+  },
+  liveStat: {
+    alignItems: 'center',
+  },
+  liveVal: {
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  liveLbl: {
+    fontSize: 11,
+    fontWeight: '600',
+    textTransform: 'uppercase',
     marginTop: 4,
-    textAlign: 'center',
+  },
+  confirmBtn: {
+    flexDirection: 'row',
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  confirmBtnText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
   },
 });

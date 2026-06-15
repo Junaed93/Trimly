@@ -17,7 +17,14 @@ export interface Theme {
   textSecondary: string;
   textMuted: string;
   textPlaceholder: string;
-  // Accent (Indigo)
+  // Brand Colors
+  primary: string;
+  primaryLight: string;
+  primarySurface: string;
+  primaryBorder: string;
+  secondary: string;
+  secondaryLight: string;
+  // Old Accent (Map to Primary for compatibility during transition)
   accent: string;
   accentLight: string;
   accentSurface: string;
@@ -37,28 +44,39 @@ export interface Theme {
 // ─── Dark Theme ──────────────────────────────────────────────────────────────
 export const darkTheme: Theme = {
   isDark: true,
-  bg: '#0d1117',
-  bgSecondary: '#0f1422',
-  surface: '#1a1f2e',
-  surfaceRaised: '#202636',
-  border: '#2a3040',
-  borderStrong: '#3d4a60',
-  text: '#f1f5f9',
-  textSecondary: '#94a3b8',
-  textMuted: '#64748b',
+  bg: '#0B0F14',
+  bgSecondary: '#111720',
+  surface: '#151C26',
+  surfaceRaised: '#1E2734',
+  border: '#202936',
+  borderStrong: '#2C3A4A',
+  text: '#F8FAFC',
+  textSecondary: '#94A3B8',
+  textMuted: '#64748B',
   textPlaceholder: '#475569',
-  accent: '#6366f1',
-  accentLight: '#818cf8',
-  accentSurface: 'rgba(99,102,241,0.12)',
-  accentBorder: 'rgba(99,102,241,0.4)',
-  error: '#f87171',
-  errorSurface: 'rgba(239,68,68,0.08)',
-  errorBorder: 'rgba(239,68,68,0.25)',
-  success: '#34d399',
-  successSurface: 'rgba(16,185,129,0.10)',
-  warning: '#fbbf24',
-  navBg: '#161b27',
-  navBorder: '#2a3040',
+  
+  primary: '#10B981', // Emerald
+  primaryLight: '#34D399',
+  primarySurface: 'rgba(16,185,129,0.12)',
+  primaryBorder: 'rgba(16,185,129,0.4)',
+  
+  secondary: '#8B5CF6', // Purple
+  secondaryLight: '#A78BFA',
+  
+  accent: '#10B981', // Mapped to primary
+  accentLight: '#34D399',
+  accentSurface: 'rgba(16,185,129,0.12)',
+  accentBorder: 'rgba(16,185,129,0.4)',
+  
+  error: '#EF4444',
+  errorSurface: 'rgba(239,68,68,0.12)',
+  errorBorder: 'rgba(239,68,68,0.3)',
+  success: '#10B981',
+  successSurface: 'rgba(16,185,129,0.12)',
+  warning: '#F59E0B',
+  
+  navBg: '#0B0F14',
+  navBorder: '#202936',
 };
 
 // ─── Light Theme ─────────────────────────────────────────────────────────────
@@ -74,10 +92,20 @@ export const lightTheme: Theme = {
   textSecondary: '#475569',
   textMuted: '#94a3b8',
   textPlaceholder: '#94a3b8',
-  accent: '#6366f1',
-  accentLight: '#4f46e5',
-  accentSurface: 'rgba(99,102,241,0.08)',
-  accentBorder: 'rgba(99,102,241,0.3)',
+  
+  primary: '#10B981',
+  primaryLight: '#059669',
+  primarySurface: 'rgba(16,185,129,0.08)',
+  primaryBorder: 'rgba(16,185,129,0.3)',
+  
+  secondary: '#8B5CF6',
+  secondaryLight: '#7C3AED',
+  
+  accent: '#10B981',
+  accentLight: '#059669',
+  accentSurface: 'rgba(16,185,129,0.08)',
+  accentBorder: 'rgba(16,185,129,0.3)',
+  
   error: '#dc2626',
   errorSurface: 'rgba(220,38,38,0.06)',
   errorBorder: 'rgba(220,38,38,0.2)',

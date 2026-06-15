@@ -1,521 +1,314 @@
-import React, { useEffect, useState, useRef } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  ActivityIndicator,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Animated,
-  Easing,
-  useWindowDimensions,
-} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Switch, Platform, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import Button from '../../components/Button';
-import Input from '../../components/Input';
+import * as Icons from 'lucide-react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 import GlassBackground from '../../components/GlassBackground';
-import AppHeader from './_AppHeader';
-import { getProfile, updateProfile, removeToken } from '../../services/api';
+import AppCard from '../../components/AppCard';
+import SectionHeader from '../../components/SectionHeader';
+import { getProfile, removeToken, getWeightLogs } from '../../services/api';
 import { useTheme } from '../../context/ThemeContext';
-import { getUserStats, saveUserStats } from '../../services/userStatsStorage';
-
-interface UserProfile {
-  id: number;
-  name: string;
-  email: string;
-  age: number | null;
-  gender: string | null;
-  height_cm: number | null;
-  weight_kg: number | null;
-  goal: string | null;
-  daily_calorie_target: number | null;
-}
-
-const GOALS = [
-  { key: 'lose_slow', label: 'Lose (Slow)', icon: 'flame-outline' as const, desc: '-500 kcal / day' },
-  { key: 'lose_aggressive', label: 'Lose (Aggressive)', icon: 'flash-outline' as const, desc: '-800 kcal / day' },
-  { key: 'maintain', label: 'Maintain', icon: 'fitness-outline' as const, desc: 'Maintenance' },
-  { key: 'gain', label: 'Gain Muscle', icon: 'barbell-outline' as const, desc: '+300 kcal / day' },
-];
-
-const GENDERS = [
-  { key: 'male', label: 'Male', icon: 'male-outline' as const },
-  { key: 'female', label: 'Female', icon: 'female-outline' as const },
-];
-
-// Circular Progress Component
-const CircularProgress = ({ progress, size, strokeWidth, color, backgroundColor, children }: any) => {
-  const radius = (size - strokeWidth) / 2;
-  const circumference = radius * 2 * Math.PI;
-  const strokeDashoffset = circumference - progress * circumference;
-
-  return (
-    <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
-      <View style={{ position: 'absolute', width: size, height: size, borderRadius: size / 2, borderWidth: strokeWidth, borderColor: backgroundColor }} />
-      <View style={{ position: 'absolute', width: size, height: size, borderRadius: size / 2, borderWidth: strokeWidth, borderColor: color, borderLeftColor: 'transparent', borderBottomColor: 'transparent', transform: [{ rotate: '-45deg' }] }} />
-      {children}
-    </View>
-  );
-};
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { theme, isDark, toggleTheme } = useTheme();
-  const { width } = useWindowDimensions();
-  const isMobileLayout = width < 768;
 
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
-
-  const [isEditing, setIsEditing] = useState(false);
-  const [heightUnit, setHeightUnit] = useState<'cm' | 'ft'>('cm');
-  const [weightUnit, setWeightUnit] = useState<'kg' | 'lbs'>('kg');
-
-  const [form, setForm] = useState({
-    age: '', gender: 'male', goal: 'maintain',
-    heightCm: '', heightFt: '', heightIn: '',
-    weightKg: '', weightLbs: '', initialWeightKg: '', targetWeightKg: ''
-  });
-  const [formErrors, setFormErrors] = useState<any>({});
-  const [saving, setSaving] = useState(false);
-
-  const ringAnim = useRef(new Animated.Value(0)).current;
+  const [profile, setProfile] = useState<any>(null);
+  const [weightLogs, setWeightLogs] = useState<any[]>([]);
 
   useEffect(() => {
-    fetchProfile();
+    fetchData();
   }, []);
 
-  useEffect(() => {
-    if (profile?.daily_calorie_target && !isEditing) {
-      Animated.timing(ringAnim, {
-        toValue: 1,
-        duration: 1500,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: false,
-      }).start();
-    } else {
-      ringAnim.setValue(0);
-    }
-  }, [profile?.daily_calorie_target, isEditing]);
-
-  const fetchProfile = async () => {
+  const fetchData = async () => {
     try {
-      const [res, stats] = await Promise.all([getProfile(), getUserStats()]);
-      setProfile(res.data);
-      if (!res.data.daily_calorie_target) {
-        setIsEditing(true);
-      } else {
-        populateForm(res.data, stats);
-      }
-    } catch (err: any) {
-      setError('Failed to load profile');
-      if (err.response?.status === 401) {
-        await removeToken();
-        router.replace('/login');
-      }
-    } finally {
-      setLoading(false);
+      const [profRes, logsRes] = await Promise.all([
+        getProfile(),
+        getWeightLogs()
+      ]);
+      setProfile(profRes.data);
+      setWeightLogs(logsRes.data);
+    } catch (e) {
+      console.log('Failed to fetch profile data', e);
     }
-  };
-
-  const populateForm = (data: UserProfile, stats?: any) => {
-    const totalInches = (data.height_cm || 0) / 2.54;
-    setForm({
-      age: data.age?.toString() || '',
-      gender: data.gender || 'male',
-      goal: data.goal || 'maintain',
-      heightCm: data.height_cm?.toString() || '',
-      heightFt: Math.floor(totalInches / 12).toString(),
-      heightIn: Math.round(totalInches % 12).toString(),
-      weightKg: data.weight_kg?.toString() || '',
-      weightLbs: Math.round((data.weight_kg || 0) * 2.20462).toString(),
-      initialWeightKg: stats?.initialWeight?.toString() || '',
-      targetWeightKg: stats?.targetWeight?.toString() || ''
-    });
   };
 
   const handleLogout = async () => {
-    await removeToken();
-    router.replace('/login');
+    Alert.alert('Log Out', 'Are you sure you want to log out?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Log Out', style: 'destructive', onPress: async () => {
+        await removeToken();
+        router.replace('/login');
+      }}
+    ]);
   };
 
-  const validateForm = () => {
-    const errs: any = {};
-    let finalHeightCm = 0;
-    let finalWeightKg = 0;
-
-    if (heightUnit === 'cm') {
-      if (!form.heightCm) errs.heightCm = 'Required';
-      else finalHeightCm = parseFloat(form.heightCm);
-    } else {
-      if (!form.heightFt || !form.heightIn) errs.heightFt = 'Required';
-      else finalHeightCm = ((parseInt(form.heightFt) * 12) + parseInt(form.heightIn)) * 2.54;
-    }
-
-    if (weightUnit === 'kg') {
-      if (!form.weightKg) errs.weightKg = 'Required';
-      else finalWeightKg = parseFloat(form.weightKg);
-    } else {
-      if (!form.weightLbs) errs.weightLbs = 'Required';
-      else finalWeightKg = parseFloat(form.weightLbs) / 2.20462;
-    }
-
-    if (!form.age) errs.age = 'Required';
-    else if (parseInt(form.age) < 15 || parseInt(form.age) > 100) errs.age = 'Must be 15-100';
-
-    setFormErrors(errs);
-    return Object.keys(errs).length === 0 ? { finalHeightCm, finalWeightKg } : null;
+  const goalMap: any = {
+    lose_slow: 'Lose Weight',
+    lose_aggressive: 'Lose Fast',
+    maintain: 'Maintain Weight',
+    gain: 'Gain Muscle'
   };
 
-  const handleSaveStats = async () => {
-    setError('');
-    setSuccessMsg('');
-    const validData = validateForm();
-    if (!validData) return;
-
-    setSaving(true);
-    try {
-      const payload = {
-        age: parseInt(form.age),
-        gender: form.gender,
-        height_cm: Number(validData.finalHeightCm.toFixed(1)),
-        weight_kg: Number(validData.finalWeightKg.toFixed(1)),
-        goal: form.goal
-      };
-
-      await saveUserStats({
-        initialWeight: form.initialWeightKg ? parseFloat(form.initialWeightKg) : null,
-        targetWeight: form.targetWeightKg ? parseFloat(form.targetWeightKg) : null
-      });
-      const res = await updateProfile(payload);
-      setProfile((prev) => prev ? { ...prev, ...payload, daily_calorie_target: res.data.daily_calorie_target } : null);
-      setSuccessMsg('Profile updated successfully!');
-      setTimeout(() => setSuccessMsg(''), 3000);
-      setIsEditing(false);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to update stats');
-    } finally {
-      setSaving(false);
-    }
+  const getInitials = (name: string) => {
+    if (!name) return 'U';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
   };
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
-  };
-
-  const calculateBMI = (cm: number, kg: number) => {
-    const m = cm / 100;
-    return (kg / (m * m)).toFixed(1);
-  };
-
-  const formatHeight = (cm: number | null) => {
-    if (!cm) return '-';
-    const rounded = Math.round(cm * 10) / 10;
-    return rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(1);
-  };
-
-  const formatWeight = (kg: number | null) => {
-    if (!kg) return '-';
-    const rounded = Math.round(kg * 10) / 10;
-    return rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(1);
-  };
-
-  if (loading) {
+  const renderAchievement = (icon: any, title: string, unlocked: boolean, color: string) => {
+    const IconComponent = (Icons as any)[icon];
     return (
-      <View style={[styles.center, { backgroundColor: theme.bg }]}>
-        <ActivityIndicator size="large" color={theme.accent} />
+      <View style={[styles.achievementItem, { backgroundColor: unlocked ? theme.surfaceRaised : theme.surface, borderColor: theme.border, opacity: unlocked ? 1 : 0.5 }]}>
+        <View style={[styles.achievementIcon, { backgroundColor: unlocked ? color + '20' : theme.border }]}>
+          <IconComponent size={24} color={unlocked ? color : theme.textMuted} />
+        </View>
+        <Text style={[styles.achievementTitle, { color: theme.text }]} numberOfLines={2} textAlign="center">{title}</Text>
       </View>
     );
-  }
-
-  if (isEditing) {
-    return (
-      <GlassBackground>
-        <AppHeader />
-        <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <ScrollView contentContainerStyle={styles.scrollPad} keyboardShouldPersistTaps="handled">
-          <View style={styles.contentMax}>
-            <View style={styles.editHeaderRow}>
-              <View>
-                <Text style={[styles.title, { color: theme.text }]}>{profile?.daily_calorie_target ? 'Edit Stats' : 'Welcome!'}</Text>
-                <Text style={[styles.subtitle, { color: theme.textSecondary }]}>{profile?.daily_calorie_target ? 'Update your body stats' : "Let's calculate your target calories"}</Text>
-              </View>
-              {profile?.daily_calorie_target && (
-                <TouchableOpacity onPress={() => { setIsEditing(false); if (profile) getUserStats().then(stats => populateForm(profile, stats)); }} style={[styles.closeBtn, { backgroundColor: theme.surface }]}>
-                  <Ionicons name="close" size={24} color={theme.textMuted} />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            {error ? (
-              <View style={[styles.alertBanner, { backgroundColor: theme.errorSurface, borderColor: theme.errorBorder }]}>
-                <Ionicons name="alert-circle" size={18} color={theme.error} style={{ marginRight: 8 }} />
-                <Text style={[styles.alertText, { color: theme.error }]}>{error}</Text>
-              </View>
-            ) : null}
-
-            <View style={{ flexDirection: isMobileLayout ? 'column' : 'row', gap: isMobileLayout ? 0 : 24 }}>
-              <View style={styles.flex}>
-                <Input label="Age" value={form.age} onChangeText={(v) => setForm({ ...form, age: v })} keyboardType="numeric" icon="calendar-outline" error={formErrors.age} />
-              </View>
-              <View style={styles.flex}>
-                <Text style={[styles.labelSm, { color: theme.textMuted }]}>Gender</Text>
-                <View style={styles.toggleRow}>
-                  {GENDERS.map(g => (
-                    <TouchableOpacity key={g.key} onPress={() => setForm({ ...form, gender: g.key })}
-                      style={[styles.toggleBtn, { backgroundColor: form.gender === g.key ? theme.accentSurface : theme.surface, borderColor: form.gender === g.key ? theme.accentBorder : theme.border }]}>
-                      <Ionicons name={g.icon} size={20} color={form.gender === g.key ? theme.accentLight : theme.textMuted} style={{ marginRight: 8 }} />
-                      <Text style={[styles.toggleText, { color: form.gender === g.key ? theme.accentLight : theme.textSecondary }]}>{g.label}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-            </View>
-
-            <View style={{ flexDirection: isMobileLayout ? 'column' : 'row', gap: isMobileLayout ? 0 : 24 }}>
-              <View style={styles.flex}>
-                <View style={styles.unitHeader}>
-                  <Text style={[styles.labelSm, { color: theme.textMuted }]}>Height</Text>
-                  <View style={[styles.unitSwitch, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                    <TouchableOpacity onPress={() => setHeightUnit('cm')} style={[styles.unitOption, heightUnit === 'cm' && { backgroundColor: theme.accent }]}>
-                       <Text style={[styles.unitText, { color: heightUnit === 'cm' ? '#fff' : theme.textSecondary }]}>cm</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setHeightUnit('ft')} style={[styles.unitOption, heightUnit === 'ft' && { backgroundColor: theme.accent }]}>
-                       <Text style={[styles.unitText, { color: heightUnit === 'ft' ? '#fff' : theme.textSecondary }]}>ft/in</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-                {heightUnit === 'cm' ? (
-                  <Input label="" value={form.heightCm} onChangeText={(v) => setForm({ ...form, heightCm: v })} keyboardType="numeric" icon="resize-outline" placeholder="178" error={formErrors.heightCm} />
-                ) : (
-                  <View style={{ flexDirection: 'row', gap: 12 }}>
-                    <View style={styles.flex}><Input label="" value={form.heightFt} onChangeText={(v) => setForm({ ...form, heightFt: v })} keyboardType="numeric" placeholder="Feet" icon="resize-outline" error={formErrors.heightFt} /></View>
-                    <View style={styles.flex}><Input label="" value={form.heightIn} onChangeText={(v) => setForm({ ...form, heightIn: v })} keyboardType="numeric" placeholder="Inches" /></View>
-                  </View>
-                )}
-              </View>
-
-              <View style={styles.flex}>
-                <View style={styles.unitHeader}>
-                  <Text style={[styles.labelSm, { color: theme.textMuted }]}>Weight</Text>
-                  <View style={[styles.unitSwitch, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                    <TouchableOpacity onPress={() => setWeightUnit('kg')} style={[styles.unitOption, weightUnit === 'kg' && { backgroundColor: theme.accent }]}>
-                       <Text style={[styles.unitText, { color: weightUnit === 'kg' ? '#fff' : theme.textSecondary }]}>kg</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setWeightUnit('lbs')} style={[styles.unitOption, weightUnit === 'lbs' && { backgroundColor: theme.accent }]}>
-                       <Text style={[styles.unitText, { color: weightUnit === 'lbs' ? '#fff' : theme.textSecondary }]}>lbs</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-                {weightUnit === 'kg' ? (
-                  <Input label="" value={form.weightKg} onChangeText={(v) => setForm({ ...form, weightKg: v })} keyboardType="numeric" icon="scale-outline" placeholder="83" error={formErrors.weightKg} />
-                ) : (
-                  <Input label="" value={form.weightLbs} onChangeText={(v) => setForm({ ...form, weightLbs: v })} keyboardType="numeric" icon="scale-outline" placeholder="185" error={formErrors.weightLbs} />
-                )}
-              </View>
-            </View>
-
-            <View style={{ flexDirection: isMobileLayout ? 'column' : 'row', gap: isMobileLayout ? 0 : 24 }}>
-               <View style={styles.flex}>
-                 <Input label="Initial Weight (kg)" value={form.initialWeightKg} onChangeText={(v) => setForm({ ...form, initialWeightKg: v })} keyboardType="numeric" icon="speedometer-outline" placeholder="Your starting weight" />
-               </View>
-               <View style={styles.flex}>
-                 <Input label="Goal Weight (kg)" value={form.targetWeightKg} onChangeText={(v) => setForm({ ...form, targetWeightKg: v })} keyboardType="numeric" icon="flag-outline" placeholder="Your goal weight" />
-               </View>
-            </View>
-
-            <Text style={[styles.labelSm, { color: theme.textMuted, marginTop: 8 }]}>Fitness Goal</Text>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 32 }}>
-              {GOALS.map(g => (
-                <TouchableOpacity key={g.key} onPress={() => setForm({ ...form, goal: g.key })}
-                  style={[styles.goalBtn, { width: isMobileLayout ? '48%' : '23%', backgroundColor: form.goal === g.key ? theme.accentSurface : theme.surface, borderColor: form.goal === g.key ? theme.accentBorder : theme.border }]}>
-                  <Ionicons name={g.icon} size={28} color={form.goal === g.key ? theme.accentLight : theme.textMuted} />
-                  <Text style={[styles.goalLabel, { color: form.goal === g.key ? theme.accentLight : theme.textSecondary }]}>{g.label}</Text>
-                  <Text style={[styles.goalDesc, { color: form.goal === g.key ? theme.accent : theme.textMuted }]}>{g.desc}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <Button title="Save & Calculate" onPress={handleSaveStats} loading={saving} icon="calculator-outline" />
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-      </GlassBackground>
-    );
-  }
-
-  // ==== DASHBOARD MODE ====
-  const goalDetails = {
-    lose_slow: { icon: 'flame', color: theme.warning, label: 'Lose Weight (Slow)' },
-    lose_aggressive: { icon: 'flash', color: theme.error, label: 'Lose Weight (Aggressive)' },
-    maintain: { icon: 'fitness', color: theme.success, label: 'Maintain Weight' },
-    gain: { icon: 'barbell', color: theme.accentLight, label: 'Gain Muscle' },
   };
 
-  const userGoal = profile?.goal ? goalDetails[profile.goal as keyof typeof goalDetails] : goalDetails.maintain;
+  const renderSettingRow = (icon: any, title: string, rightElement: React.ReactNode, hideBorder = false) => {
+    const IconComponent = (Icons as any)[icon];
+    return (
+      <View style={[styles.settingRow, { borderBottomWidth: hideBorder ? 0 : StyleSheet.hairlineWidth, borderBottomColor: theme.border }]}>
+        <View style={styles.settingLeft}>
+          <IconComponent size={20} color={theme.textSecondary} style={{ marginRight: 12 }} />
+          <Text style={[styles.settingTitle, { color: theme.text }]}>{title}</Text>
+        </View>
+        {rightElement}
+      </View>
+    );
+  };
 
   return (
     <GlassBackground>
-      <AppHeader />
-      <View style={styles.flex}>
-      <ScrollView contentContainerStyle={styles.scrollPad}>
-        <View style={styles.contentMaxLg}>
-          {successMsg ? (
-            <View style={[styles.alertBanner, { backgroundColor: theme.successSurface, borderColor: theme.success, marginBottom: 20 }]}>
-              <Ionicons name="checkmark-circle" size={18} color={theme.success} style={{ marginRight: 8 }} />
-              <Text style={[styles.alertText, { color: theme.success }]}>{successMsg}</Text>
-            </View>
-          ) : null}
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+        <Animated.View entering={FadeInUp}>
+          <Text style={[styles.title, { color: theme.text }]}>Profile</Text>
+        </Animated.View>
 
-          <View style={{ marginBottom: 32 }}>
-             <Text style={[styles.labelSm, { color: theme.textMuted }]}>{getGreeting()}</Text>
-             <Text style={[styles.title, { color: theme.text }]}>{profile?.name}</Text>
-          </View>
-
-          {/* Calorie Target Card */}
-          <View style={{ marginBottom: 24 }}>
-            <View style={[styles.targetCard, { backgroundColor: 'rgba(255, 255, 255, 0.1)', borderColor: 'rgba(255, 255, 255, 0.2)' }]}>
-              <View style={styles.targetHeader}>
-                 <View style={[styles.iconBox, { backgroundColor: theme.accentSurface }]}>
-                    <Ionicons name="nutrition-outline" size={20} color={theme.accentLight} />
-                 </View>
-                 <Text style={[styles.labelSm, { color: theme.textMuted, marginTop: 0 }]}>Your Daily Target</Text>
+        {/* Profile Hero Card */}
+        <Animated.View entering={FadeInUp.delay(100)} style={{ marginTop: 24 }}>
+          <AppCard variant="glass" style={styles.profileCard}>
+            <View style={styles.profileHeader}>
+              <View style={[styles.avatarBox, { backgroundColor: theme.primarySurface }]}>
+                <Text style={[styles.avatarText, { color: theme.primary }]}>{getInitials(profile?.name)}</Text>
               </View>
-              
-              <Animated.Text style={[styles.calorieText, { color: theme.text }]}>
-                {profile?.daily_calorie_target}
-              </Animated.Text>
-              <Text style={[styles.calorieUnit, { color: theme.accentLight }]}>kcal / day</Text>
-              
-              <View style={[styles.divider, { backgroundColor: 'rgba(255, 255, 255, 0.1)' }]} />
-
-              <View style={[styles.goalBanner, { backgroundColor: 'rgba(255, 255, 255, 0.05)' }]}>
-                 <Ionicons name={userGoal?.icon as any} size={20} color={userGoal?.color} style={{ marginRight: 8 }} />
-                 <Text style={[styles.goalBannerText, { color: theme.text }]}>Goal: {userGoal?.label}</Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Body Statistics Card */}
-          <View>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Ionicons name="stats-chart-outline" size={18} color={theme.accent} style={{ marginRight: 8 }} />
-                  <Text style={[styles.labelSm, { color: theme.textMuted, marginTop: 0 }]}>Body Statistics</Text>
-                </View>
-                <TouchableOpacity onPress={() => setIsEditing(true)} style={[styles.editBtn, { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)' }]}>
-                   <Ionicons name="pencil-outline" size={14} color={theme.accentLight} style={{ marginRight: 4 }} />
-                   <Text style={[styles.editBtnText, { color: theme.accentLight }]}>Edit</Text>
-                </TouchableOpacity>
-            </View>
-
-            <View style={[styles.statsCard, { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)', marginBottom: 24 }]}>
-              <InfoRow icon="resize-outline" label="Height" value={`${formatHeight(profile?.height_cm ?? null)} cm`} theme={theme} />
-              <InfoRow icon="scale-outline" label="Weight" value={`${formatWeight(profile?.weight_kg ?? null)} kg`} theme={theme} />
-              <InfoRow icon="calendar-outline" label="Age" value={`${profile?.age} yrs`} theme={theme} />
-              <InfoRow icon="male-female-outline" label="Gender" value={profile?.gender || '-'} theme={theme} capitalize />
-            </View>
-
-            {profile?.height_cm && profile?.weight_kg && (
-              <View style={[styles.bmiCard, { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)' }]}>
-                <Text style={[styles.labelSm, { color: theme.textMuted, marginTop: 0, marginBottom: 8 }]}>BMI Estimate</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
-                  <Text style={[styles.bmiValue, { color: theme.text }]}>{calculateBMI(profile.height_cm, profile.weight_kg)}</Text>
-                  <Text style={[styles.bmiUnit, { color: theme.textSecondary }]}>kg/m²</Text>
+              <View style={styles.profileInfo}>
+                <Text style={[styles.profileName, { color: theme.text }]}>{profile?.name}</Text>
+                <Text style={[styles.profileEmail, { color: theme.textMuted }]}>{profile?.email}</Text>
+                <View style={[styles.goalBadge, { backgroundColor: theme.secondary + '20' }]}>
+                  <Icons.Target size={12} color={theme.secondary} style={{ marginRight: 4 }} />
+                  <Text style={[styles.goalText, { color: theme.secondary }]}>{profile?.goal ? goalMap[profile.goal] : 'No Goal Set'}</Text>
                 </View>
               </View>
-            )}
+              <TouchableOpacity style={styles.editBtn}>
+                <Icons.Edit2 size={20} color={theme.textSecondary} />
+              </TouchableOpacity>
+            </View>
+          </AppCard>
+        </Animated.View>
+
+        {/* Stats Grid */}
+        <Animated.View entering={FadeInUp.delay(200)} style={{ marginTop: 24 }}>
+          <View style={styles.statsGrid}>
+            <AppCard variant="elevated" style={styles.statCard}>
+              <Icons.Scale size={24} color={theme.primary} style={{ marginBottom: 12 }} />
+              <Text style={[styles.statValue, { color: theme.text }]}>{weightLogs.length}</Text>
+              <Text style={[styles.statLabel, { color: theme.textMuted }]}>Weight Logs</Text>
+            </AppCard>
+            <AppCard variant="elevated" style={styles.statCard}>
+              <Icons.Flame size={24} color={theme.secondary} style={{ marginBottom: 12 }} />
+              <Text style={[styles.statValue, { color: theme.text }]}>{profile?.daily_calorie_target || '-'}</Text>
+              <Text style={[styles.statLabel, { color: theme.textMuted }]}>Daily Target</Text>
+            </AppCard>
           </View>
-        </View>
+        </Animated.View>
+
+        {/* Achievements */}
+        <Animated.View entering={FadeInUp.delay(300)} style={{ marginTop: 32 }}>
+          <SectionHeader title="Achievements" actionText="View All" />
+          <View style={styles.achievementsGrid}>
+            {renderAchievement('Award', 'First Log', true, '#F59E0B')}
+            {renderAchievement('Flame', '7 Day Streak', weightLogs.length >= 7, theme.error)}
+            {renderAchievement('Star', '30 Day Streak', weightLogs.length >= 30, theme.secondary)}
+            {renderAchievement('Target', 'Goal Reached', false, theme.success)}
+          </View>
+        </Animated.View>
+
+        {/* Settings */}
+        <Animated.View entering={FadeInUp.delay(400)} style={{ marginTop: 32 }}>
+          <SectionHeader title="Settings" />
+          <AppCard variant="glass" style={{ padding: 0 }}>
+            {renderSettingRow('Moon', 'Dark Mode', (
+              <Switch 
+                value={isDark} 
+                onValueChange={toggleTheme} 
+                trackColor={{ false: theme.border, true: theme.primary }}
+              />
+            ))}
+            {renderSettingRow('Bell', 'Notifications', (
+              <Switch 
+                value={true} 
+                onValueChange={() => {}} 
+                trackColor={{ false: theme.border, true: theme.primary }}
+              />
+            ))}
+            {renderSettingRow('Shield', 'Privacy & Security', (
+              <Icons.ChevronRight size={20} color={theme.textMuted} />
+            ))}
+            {renderSettingRow('HelpCircle', 'Help & Support', (
+              <Icons.ChevronRight size={20} color={theme.textMuted} />
+            ), true)}
+          </AppCard>
+        </Animated.View>
+
+        {/* Logout */}
+        <Animated.View entering={FadeInUp.delay(500)} style={{ marginTop: 32 }}>
+          <TouchableOpacity style={[styles.logoutBtn, { backgroundColor: theme.errorSurface, borderColor: theme.errorBorder }]} onPress={handleLogout}>
+            <Icons.LogOut size={20} color={theme.error} style={{ marginRight: 8 }} />
+            <Text style={[styles.logoutText, { color: theme.error }]}>Log Out</Text>
+          </TouchableOpacity>
+          <Text style={[styles.versionText, { color: theme.textMuted }]}>Trimly v1.0.0</Text>
+        </Animated.View>
+        
       </ScrollView>
-
-      {/* FAB Edit Button for Mobile (Rule 7: Support User Control) */}
-      <View style={styles.fabWrapper}>
-         <TouchableOpacity onPress={() => setIsEditing(true)} style={[styles.fab, { backgroundColor: theme.accent }]}>
-            <Ionicons name="pencil" size={24} color="#fff" />
-         </TouchableOpacity>
-      </View>
-      </View>
     </GlassBackground>
   );
 }
 
-function InfoRow({ icon, label, value, theme, capitalize = false }: any) {
-  return (
-    <View style={[styles.infoRow, { borderBottomColor: theme.border }]}>
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <View style={[styles.infoIconBox, { backgroundColor: theme.border }]}>
-          <Ionicons name={icon} size={16} color={theme.textMuted} />
-        </View>
-        <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>{label}</Text>
-      </View>
-      <Text style={[styles.infoValue, { color: theme.text, textTransform: capitalize ? 'capitalize' : 'none' }]}>
-        {value}
-      </Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  scrollPad: { paddingBottom: 100, paddingHorizontal: 16, paddingTop: Platform.OS === 'ios' ? 44 : 24 },
-  contentMax: { maxWidth: 640, width: '100%', alignSelf: 'center' },
-  contentMaxLg: { maxWidth: 1024, width: '100%', alignSelf: 'center' },
-  
-  editHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 },
-  title: { fontSize: 32, fontWeight: '800', marginBottom: 4 },
-  subtitle: { fontSize: 16, fontWeight: '500' },
-  closeBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  
-  alertBanner: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, marginBottom: 20 },
-  alertText: { fontSize: 14, fontWeight: '600', flex: 1 },
-  
-  labelSm: { fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8, marginLeft: 4 },
-  
-  toggleRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
-  toggleBtn: { flex: 1, paddingVertical: 14, borderRadius: 16, borderWidth: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
-  toggleText: { fontWeight: '700' },
-  
-  unitHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
-  unitSwitch: { flexDirection: 'row', borderRadius: 8, borderWidth: 1, overflow: 'hidden' },
-  unitOption: { paddingHorizontal: 12, paddingVertical: 6 },
-  unitText: { fontSize: 12, fontWeight: '700' },
-  
-  goalBtn: { flexGrow: 1, paddingVertical: 20, borderRadius: 20, alignItems: 'center', borderWidth: 1 },
-  goalLabel: { fontWeight: '700', fontSize: 14, marginTop: 12, textAlign: 'center' },
-  goalDesc: { fontSize: 12, marginTop: 4, textAlign: 'center' },
-
-  targetCard: { borderWidth: 1, borderRadius: 32, padding: 32, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 10 },
-  targetHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  iconBox: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
-  calorieText: { fontSize: 64, fontWeight: '800', marginBottom: 4 },
-  calorieUnit: { fontSize: 18, fontWeight: '600', marginBottom: 32 },
-  divider: { width: '100%', height: 1, marginBottom: 24 },
-  goalBanner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: '100%', paddingVertical: 16, borderRadius: 20 },
-  goalBannerText: { fontWeight: '700', fontSize: 16 },
-
-  editBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1 },
-  editBtnText: { fontSize: 12, fontWeight: '700', textTransform: 'uppercase' },
-
-  statsCard: { borderWidth: 1, borderRadius: 24, padding: 20, marginBottom: 24 },
-  infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1 },
-  infoIconBox: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
-  infoLabel: { fontSize: 14, fontWeight: '600' },
-  infoValue: { fontSize: 16, fontWeight: '700' },
-
-  bmiCard: { borderWidth: 1, borderRadius: 24, padding: 20 },
-  bmiValue: { fontSize: 32, fontWeight: '800' },
-  bmiUnit: { fontSize: 14, fontWeight: '600', paddingBottom: 4 },
-
-  fabWrapper: { position: 'absolute', bottom: 24, right: 24, display: Platform.OS === 'web' ? 'none' : 'flex' },
-  fab: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
+  container: {
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingBottom: 100,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: '800',
+  },
+  profileCard: {
+    padding: 24,
+  },
+  profileHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  avatarBox: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  avatarText: {
+    fontSize: 24,
+    fontWeight: '800',
+  },
+  profileInfo: {
+    flex: 1,
+  },
+  profileName: {
+    fontSize: 20,
+    fontWeight: '800',
+    marginBottom: 2,
+  },
+  profileEmail: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  goalBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
+  goalText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  editBtn: {
+    padding: 8,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  statCard: {
+    flex: 1,
+    padding: 20,
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 28,
+    fontWeight: '800',
+  },
+  statLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 4,
+    textTransform: 'uppercase',
+  },
+  achievementsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  achievementItem: {
+    width: '48%',
+    padding: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  achievementIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  achievementTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  settingRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+  },
+  settingLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  settingTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  logoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginBottom: 24,
+  },
+  logoutText: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  versionText: {
+    textAlign: 'center',
+    fontSize: 12,
+    fontWeight: '500',
+  },
 });
