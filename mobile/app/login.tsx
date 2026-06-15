@@ -11,11 +11,17 @@ import {
   Image,
 } from 'react-native';
 import { Link, useRouter } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 import { Ionicons } from '@expo/vector-icons';
+import GlassBackground from '../components/GlassBackground';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import { loginUser, saveToken } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
+import api from '../services/api';
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -69,22 +75,46 @@ export default function LoginScreen() {
     }
   };
 
+  const handleGoogleAuth = async () => {
+    try {
+      const redirectUri = Linking.createURL('/auth-callback');
+      // @ts-ignore
+      const backendUrl = api.defaults.baseURL;
+      const authUrl = `${backendUrl}/auth/google?state=${encodeURIComponent(redirectUri)}`;
+      
+      const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
+      
+      if (result.type === 'success' && result.url) {
+        const parsedUrl = Linking.parse(result.url);
+        const token = parsedUrl.queryParams?.token;
+        if (token) {
+           await saveToken(token as string);
+           router.replace('/(tabs)/home');
+        }
+      }
+    } catch (e) {
+      console.error(e);
+      setError('Google login failed.');
+    }
+  };
+
   return (
-    <KeyboardAvoidingView
-      style={[styles.flex, { backgroundColor: theme.bg }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+    <GlassBackground>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
       <View style={styles.flex}>
-        {/* ── Theme toggle ── */}
-        <View style={[styles.topBar, { backgroundColor: theme.bg }]}>
-          <TouchableOpacity
-            onPress={toggleTheme}
-            accessibilityLabel={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            style={[styles.themeBtn, { backgroundColor: theme.surface, borderColor: theme.border }]}
-          >
-            <Ionicons name={isDark ? 'sunny-outline' : 'moon-outline'} size={20} color={theme.textSecondary} />
-          </TouchableOpacity>
-        </View>
+          {/* ── Theme toggle ── */}
+          <View style={styles.topBar}>
+            <TouchableOpacity
+              onPress={toggleTheme}
+              accessibilityLabel={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              style={[styles.themeBtn, { backgroundColor: theme.surface, borderColor: theme.border }]}
+            >
+              <Ionicons name={isDark ? 'sunny-outline' : 'moon-outline'} size={20} color={theme.textSecondary} />
+            </TouchableOpacity>
+          </View>
 
         <ScrollView
           style={styles.flex}
@@ -94,7 +124,9 @@ export default function LoginScreen() {
         >
           <Animated.View
             style={[
-              styles.card,
+              styles.contentContainer,
+              { backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.6)' },
+              { borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.4)' },
               {
                 opacity: fadeAnim,
                 transform: [{ translateY: slideAnim }],
@@ -174,11 +206,7 @@ export default function LoginScreen() {
             {/* ── Google OAuth ── */}
             <TouchableOpacity
               style={[styles.googleBtn, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => {
-                if (typeof window !== 'undefined') {
-                  window.location.href = 'http://192.168.0.100:3000/auth/google';
-                }
-              }}
+              onPress={handleGoogleAuth}
               activeOpacity={0.75}
               accessibilityLabel="Continue with Google"
             >
@@ -194,12 +222,13 @@ export default function LoginScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* ── Footer ── */}
-            <Text style={[styles.footer, { color: theme.textMuted }]}>Built by  <Link href="https://junaed93.github.io">Junaed</Link></Text>
+              {/* ── Footer ── */}
+              <Text style={[styles.footer, { color: theme.textMuted }]}>Built by <Link href="https://junaed93.github.io">Junaed</Link></Text>
           </Animated.View>
         </ScrollView>
       </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </GlassBackground>
   );
 }
 
@@ -220,14 +249,16 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 24,
+    paddingHorizontal: 28,
+    paddingBottom: 40,
   },
-  card: {
-    maxWidth: 480,
+  contentContainer: {
     width: '100%',
+    maxWidth: 480,
     alignSelf: 'center',
+    padding: 32,
+    borderRadius: 32,
+    borderWidth: 1,
   },
   brandRow: {
     alignItems: 'center',

@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Post, Put, Request, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put, Request, Res, UseGuards, Query } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { GoogleAuthGuard } from './google-auth.guard';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -40,18 +41,26 @@ export class AuthController {
   // ── Google OAuth ──
 
   @Get('google')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleAuthGuard)
   googleAuth() {
     // Redirects to Google
   }
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleAuthCallback(@Request() req: any, @Res() res: Response) {
+  async googleAuthCallback(@Request() req: any, @Res() res: Response, @Query('state') state: string) {
     // req.user is the result from GoogleStrategy.validate() → validateOAuthLogin()
     const { access_token } = req.user;
-    const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:8082';
-    // Redirect back to frontend with token in URL hash
-    res.redirect(`${frontendUrl}/auth-callback?token=${access_token}`);
+    
+    let redirectUrl = state;
+    if (!redirectUrl) {
+      const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:8082';
+      redirectUrl = `${frontendUrl}/auth-callback`;
+    }
+
+    // Redirect back to frontend with token in query params
+    const url = new URL(redirectUrl);
+    url.searchParams.set('token', access_token);
+    res.redirect(url.toString());
   }
 }

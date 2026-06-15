@@ -1,8 +1,19 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
-// Change this to your backend URL
-const API_URL = 'http://192.168.0.100:3000';
+// Dynamically determine the backend URL based on where the Expo bundler is running.
+let API_URL = 'http://localhost:3000';
+
+if (Platform.OS !== 'web') {
+  // Constants.expoConfig?.hostUri is usually something like "192.168.0.100:8081" during development
+  const debuggerHost = Constants.expoConfig?.hostUri;
+  if (debuggerHost) {
+    const ip = debuggerHost.split(':')[0];
+    API_URL = `http://${ip}:3000`;
+  }
+}
 
 const api = axios.create({
   baseURL: API_URL,

@@ -13,7 +13,7 @@ if (Platform.OS !== 'web') {
 const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
   const { theme, isDark } = useTheme();
   
-  const visibleRouteNames = ['home', 'food', 'calorie', 'profile'];
+  const visibleRouteNames = ['home', 'food', 'calorie', 'exercise', 'profile'];
   const visibleRoutes = state.routes.filter((route) => visibleRouteNames.includes(route.name));
   
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
@@ -42,6 +42,7 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
     if (route.name === 'home') { title = 'Home'; icon = 'Home'; }
     else if (route.name === 'food') { title = 'Food'; icon = 'Utensils'; }
     else if (route.name === 'calorie') { title = 'Calorie'; icon = 'Flame'; }
+    else if (route.name === 'exercise') { title = 'Exercise'; icon = 'Dumbbell'; }
     else if (route.name === 'profile') { title = 'Profile'; icon = 'User'; }
 
     return {
@@ -103,6 +104,7 @@ export default function TabLayout() {
       <Tabs.Screen name="home" />
       <Tabs.Screen name="food" />
       <Tabs.Screen name="calorie" />
+      <Tabs.Screen name="exercise" />
       <Tabs.Screen name="profile" />
     </Tabs>
   );

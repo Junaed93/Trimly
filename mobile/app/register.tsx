@@ -11,11 +11,17 @@ import {
   Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 import { Ionicons } from '@expo/vector-icons';
+import GlassBackground from '../components/GlassBackground';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import { registerUser, loginUser, saveToken } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
+import api from '../services/api';
+
+WebBrowser.maybeCompleteAuthSession();
 
 // ── Password Strength Meter ─────────────────────────────────────────────────
 function PasswordStrength({ password }: { password: string }) {
@@ -106,13 +112,37 @@ export default function RegisterScreen() {
     }
   };
 
+  const handleGoogleAuth = async () => {
+    try {
+      const redirectUri = Linking.createURL('/auth-callback');
+      // @ts-ignore
+      const backendUrl = api.defaults.baseURL;
+      const authUrl = `${backendUrl}/auth/google?state=${encodeURIComponent(redirectUri)}`;
+      
+      const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
+      
+      if (result.type === 'success' && result.url) {
+        const parsedUrl = Linking.parse(result.url);
+        const token = parsedUrl.queryParams?.token;
+        if (token) {
+           await saveToken(token as string);
+           router.replace('/(tabs)/home');
+        }
+      }
+    } catch (e) {
+      console.error(e);
+      setGlobalError('Google login failed.');
+    }
+  };
+
   return (
-    <KeyboardAvoidingView
-      style={[styles.flex, { backgroundColor: theme.bg }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+    <GlassBackground>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
       {/* ── Top bar: back + theme toggle ── */}
-      <View style={[styles.topBar, { backgroundColor: theme.bg }]}>
+      <View style={styles.topBar}>
         <TouchableOpacity
           onPress={() => router.back()}
           style={[styles.iconBtn, { backgroundColor: theme.surface, borderColor: theme.border }]}
@@ -136,12 +166,14 @@ export default function RegisterScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <Animated.View
-          style={[
-            styles.card,
-            { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
-          ]}
-        >
+          <Animated.View
+            style={[
+              styles.card,
+              { backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.6)' },
+              { borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.4)' },
+              { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+            ]}
+          >
           {/* ── Brand icon ── */}
           <View style={styles.brandRow}>
             <View style={[styles.logoBox, { backgroundColor: theme.accentSurface, borderColor: theme.accentBorder }]}>
@@ -219,11 +251,7 @@ export default function RegisterScreen() {
           {/* ── Google OAuth ── */}
           <TouchableOpacity
             style={[styles.googleBtn, { backgroundColor: theme.surface, borderColor: theme.border }]}
-            onPress={() => {
-              if (typeof window !== 'undefined') {
-                window.location.href = 'http://localhost:3000/auth/google';
-              }
-            }}
+            onPress={handleGoogleAuth}
             activeOpacity={0.75}
             accessibilityLabel="Continue with Google"
           >
@@ -241,6 +269,7 @@ export default function RegisterScreen() {
         </Animated.View>
       </ScrollView>
     </KeyboardAvoidingView>
+    </GlassBackground>
   );
 }
 
@@ -268,9 +297,12 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   card: {
-    maxWidth: 480,
     width: '100%',
+    maxWidth: 480,
     alignSelf: 'center',
+    padding: 32,
+    borderRadius: 32,
+    borderWidth: 1,
   },
   brandRow: {
     alignItems: 'center',

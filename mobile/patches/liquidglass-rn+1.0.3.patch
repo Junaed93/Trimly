@@ -1,0 +1,92 @@
+diff --git a/node_modules/liquidglass-rn/src/components/LiquidTabBar.tsx b/node_modules/liquidglass-rn/src/components/LiquidTabBar.tsx
+index e85a4d4..fc78f94 100644
+--- a/node_modules/liquidglass-rn/src/components/LiquidTabBar.tsx
++++ b/node_modules/liquidglass-rn/src/components/LiquidTabBar.tsx
+@@ -91,6 +91,17 @@ export const LiquidTabBar: React.FC<LiquidTabBarProps> = ({
+     });
+   };
+ 
++  // Calculate dynamic vertical squish factor (thins out when stretched, bulges on snap)
++  const interpolateWidthToScaleY = (w: number) => {
++    'worklet';
++    if (tabLayouts.length === 0 || !tabLayouts[activeIndex]) return 1;
++    const baseWidth = tabLayouts[activeIndex].width;
++    if (baseWidth === 0) return 1;
++    const stretchRatio = w / baseWidth;
++    // Stretch thins the vertical blob slightly (simulate surface tension)
++    return Math.max(0.85, Math.min(1.1, 1 - (stretchRatio - 1) * 0.22));
++  };
++
+   // Liquid Bubble indicator styling
+   const indicatorStyle = useAnimatedStyle(() => {
+     const width = Math.max(0, indicatorRight.value - indicatorLeft.value);
+@@ -106,17 +117,6 @@ export const LiquidTabBar: React.FC<LiquidTabBarProps> = ({
+     };
+   });
+ 
+-  // Calculate dynamic vertical squish factor (thins out when stretched, bulges on snap)
+-  const interpolateWidthToScaleY = (w: number) => {
+-    'worklet';
+-    if (tabLayouts.length === 0 || !tabLayouts[activeIndex]) return 1;
+-    const baseWidth = tabLayouts[activeIndex].width;
+-    if (baseWidth === 0) return 1;
+-    const stretchRatio = w / baseWidth;
+-    // Stretch thins the vertical blob slightly (simulate surface tension)
+-    return Math.max(0.85, Math.min(1.1, 1 - (stretchRatio - 1) * 0.22));
+-  };
+-
+   const activeTextColor = activeColor || theme.accentColor;
+   const inactiveTextColor = inactiveColor || theme.subtextColor;
+ 
+@@ -125,6 +125,8 @@ export const LiquidTabBar: React.FC<LiquidTabBarProps> = ({
+       <LiquidView
+         intensity={60}
+         borderRadius={30}
++        experimentalSkia={true}
++        borderGlow={true}
+         style={styles.floatingBar}
+         onLayout={handleBarLayout}
+       >
+diff --git a/node_modules/liquidglass-rn/src/components/LiquidView.tsx b/node_modules/liquidglass-rn/src/components/LiquidView.tsx
+index 562f486..5287302 100644
+--- a/node_modules/liquidglass-rn/src/components/LiquidView.tsx
++++ b/node_modules/liquidglass-rn/src/components/LiquidView.tsx
+@@ -32,8 +32,18 @@ export interface LiquidViewProps extends ViewProps {
+ 
+ const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
+ 
+-// Build the Skia RuntimeEffect once at module level (safe — Skia is initialized before import)
+-const refractionEffect = Skia.RuntimeEffect.Make(REFRACTION_SHADER);
++// Build the Skia RuntimeEffect safely via lazy evaluation
++let refractionEffect: any = null;
++const getRefractionEffect = () => {
++  if (!refractionEffect && typeof Skia !== 'undefined' && Skia?.RuntimeEffect) {
++    try {
++      refractionEffect = Skia.RuntimeEffect.Make(REFRACTION_SHADER);
++    } catch (e) {
++      // Skia WebAssembly might not be loaded yet
++    }
++  }
++  return refractionEffect;
++};
+ 
+ export const LiquidView: React.FC<LiquidViewProps> = ({
+   intensity = 50,
+@@ -142,7 +152,7 @@ export const LiquidView: React.FC<LiquidViewProps> = ({
+     >
+       {/* Background blur and overlay layers */}
+       <View style={[layoutStyles.absoluteFill, layoutStyles.overflowHidden, { borderRadius }]}>
+-        {experimentalSkia && dimensions.width > 0 && dimensions.height > 0 && refractionEffect ? (
++        {experimentalSkia && dimensions.width > 0 && dimensions.height > 0 && getRefractionEffect() ? (
+           // FIX BUG #7: Two-pass Skia approach:
+           // 1. BackdropFilter blurs the scene behind this canvas.
+           // 2. A Fill with the RuntimeShader paints the refraction on top of the blur.
+@@ -156,7 +166,7 @@ export const LiquidView: React.FC<LiquidViewProps> = ({
+ 
+             {/* Pass 2: Refraction distortion + specular highlights on a full-canvas Fill */}
+             <Fill>
+-              <Shader source={refractionEffect} uniforms={skiaUniforms} />
++              <Shader source={getRefractionEffect()} uniforms={skiaUniforms} />
+             </Fill>
+           </Canvas>
+         ) : (

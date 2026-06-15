@@ -1999,5 +1999,1507 @@
     "protein_g": 6,
     "fat_g": 9,
     "carbs_g": 50
+  },
+  {
+    "id": 301,
+    "food_name_en": "Fuska Special",
+    "food_name_bn": "স্পেশাল ফুসকা",
+    "serving_size": "10 pieces",
+    "calories": 320,
+    "protein_g": 7,
+    "fat_g": 11,
+    "carbs_g": 48
+  },
+  {
+    "id": 302,
+    "food_name_en": "Doi Fuska",
+    "food_name_bn": "দই ফুসকা",
+    "serving_size": "1 plate",
+    "calories": 370,
+    "protein_g": 8,
+    "fat_g": 12,
+    "carbs_g": 56
+  },
+  {
+    "id": 303,
+    "food_name_en": "Chicken Chotpoti",
+    "food_name_bn": "চিকেন চটপটি",
+    "serving_size": "1 bowl",
+    "calories": 340,
+    "protein_g": 18,
+    "fat_g": 10,
+    "carbs_g": 42
+  },
+  {
+    "id": 304,
+    "food_name_en": "Beef Chotpoti",
+    "food_name_bn": "বিফ চটপটি",
+    "serving_size": "1 bowl",
+    "calories": 390,
+    "protein_g": 20,
+    "fat_g": 14,
+    "carbs_g": 44
+  },
+  {
+    "id": 305,
+    "food_name_en": "Bhelpuri",
+    "food_name_bn": "ভেলপুরি",
+    "serving_size": "1 plate",
+    "calories": 280,
+    "protein_g": 6,
+    "fat_g": 7,
+    "carbs_g": 49
+  },
+  {
+    "id": 306,
+    "food_name_en": "Muri Makha",
+    "food_name_bn": "মুড়ি মাখা",
+    "serving_size": "1 bowl",
+    "calories": 240,
+    "protein_g": 5,
+    "fat_g": 8,
+    "carbs_g": 37
+  },
+  {
+    "id": 307,
+    "food_name_en": "Beef Kala Bhuna",
+    "food_name_bn": "বিফ কালাভুনা",
+    "serving_size": "100g",
+    "calories": 360,
+    "protein_g": 25,
+    "fat_g": 28,
+    "carbs_g": 3
+  },
+  {
+    "id": 308,
+    "food_name_en": "Mutton Kala Bhuna",
+    "food_name_bn": "খাসির কালাভুনা",
+    "serving_size": "100g",
+    "calories": 390,
+    "protein_g": 24,
+    "fat_g": 31,
+    "carbs_g": 2
+  },
+  {
+    "id": 309,
+    "food_name_en": "Chicken Jalfrezi",
+    "food_name_bn": "চিকেন জালফ্রেজি",
+    "serving_size": "100g",
+    "calories": 260,
+    "protein_g": 21,
+    "fat_g": 16,
+    "carbs_g": 6
+  },
+  {
+    "id": 310,
+    "food_name_en": "Beef Jalfrezi",
+    "food_name_bn": "বিফ জালফ্রেজি",
+    "serving_size": "100g",
+    "calories": 310,
+    "protein_g": 23,
+    "fat_g": 22,
+    "carbs_g": 5
+  },
+  {
+    "id": 311,
+    "food_name_en": "Chicken Bharta",
+    "food_name_bn": "চিকেন ভর্তা",
+    "serving_size": "100g",
+    "calories": 240,
+    "protein_g": 22,
+    "fat_g": 14,
+    "carbs_g": 4
+  },
+  {
+    "id": 312,
+    "food_name_en": "Beef Bharta",
+    "food_name_bn": "বিফ ভর্তা",
+    "serving_size": "100g",
+    "calories": 290,
+    "protein_g": 24,
+    "fat_g": 19,
+    "carbs_g": 3
+  },
+  {
+    "id": 313,
+    "food_name_en": "Chicken Liver Fry",
+    "food_name_bn": "মুরগির কলিজা ভুনা",
+    "serving_size": "100g",
+    "calories": 210,
+    "protein_g": 24,
+    "fat_g": 10,
+    "carbs_g": 3
+  },
+  {
+    "id": 314,
+    "food_name_en": "Beef Liver Fry",
+    "food_name_bn": "গরুর কলিজা ভুনা",
+    "serving_size": "100g",
+    "calories": 240,
+    "protein_g": 26,
+    "fat_g": 12,
+    "carbs_g": 4
+  },
+  {
+    "id": 315,
+    "food_name_en": "Brain Fry",
+    "food_name_bn": "মগজ ভুনা",
+    "serving_size": "100g",
+    "calories": 280,
+    "protein_g": 13,
+    "fat_g": 24,
+    "carbs_g": 2
+  },
+  {
+    "id": 316,
+    "food_name_en": "Beef Nehari",
+    "food_name_bn": "বিফ নেহারি",
+    "serving_size": "1 bowl",
+    "calories": 420,
+    "protein_g": 22,
+    "fat_g": 30,
+    "carbs_g": 11
+  },
+  {
+    "id": 317,
+    "food_name_en": "Paya Soup",
+    "food_name_bn": "পায়া",
+    "serving_size": "1 bowl",
+    "calories": 330,
+    "protein_g": 19,
+    "fat_g": 23,
+    "carbs_g": 8
+  },
+  {
+    "id": 318,
+    "food_name_en": "Beef Tongue Curry",
+    "food_name_bn": "জিহ্বা ভুনা",
+    "serving_size": "100g",
+    "calories": 290,
+    "protein_g": 18,
+    "fat_g": 22,
+    "carbs_g": 2
+  },
+  {
+    "id": 319,
+    "food_name_en": "Chicken Heart Fry",
+    "food_name_bn": "মুরগির হৃদপিণ্ড ভুনা",
+    "serving_size": "100g",
+    "calories": 200,
+    "protein_g": 18,
+    "fat_g": 12,
+    "carbs_g": 2
+  },
+  {
+    "id": 320,
+    "food_name_en": "Beef Heart Fry",
+    "food_name_bn": "গরুর হৃদপিণ্ড ভুনা",
+    "serving_size": "100g",
+    "calories": 240,
+    "protein_g": 22,
+    "fat_g": 14,
+    "carbs_g": 2
+  },
+  {
+    "id": 321,
+    "food_name_en": "Kacchi Half Plate",
+    "food_name_bn": "কাচ্চি (হাফ)",
+    "serving_size": "1 plate",
+    "calories": 850,
+    "protein_g": 28,
+    "fat_g": 42,
+    "carbs_g": 88
+  },
+  {
+    "id": 322,
+    "food_name_en": "Kacchi Full Plate",
+    "food_name_bn": "কাচ্চি (ফুল)",
+    "serving_size": "1 plate",
+    "calories": 1350,
+    "protein_g": 42,
+    "fat_g": 68,
+    "carbs_g": 138
+  },
+  {
+    "id": 323,
+    "food_name_en": "Morog Polao Full",
+    "food_name_bn": "মোরগ পোলাও",
+    "serving_size": "1 plate",
+    "calories": 980,
+    "protein_g": 38,
+    "fat_g": 41,
+    "carbs_g": 112
+  },
+  {
+    "id": 324,
+    "food_name_en": "Chicken Biryani Full",
+    "food_name_bn": "চিকেন বিরিয়ানি",
+    "serving_size": "1 plate",
+    "calories": 890,
+    "protein_g": 34,
+    "fat_g": 33,
+    "carbs_g": 108
+  },
+  {
+    "id": 325,
+    "food_name_en": "Beef Biryani Full",
+    "food_name_bn": "বিফ বিরিয়ানি",
+    "serving_size": "1 plate",
+    "calories": 1050,
+    "protein_g": 40,
+    "fat_g": 45,
+    "carbs_g": 116
+  },
+  {
+    "id": 326,
+    "food_name_en": "Tehari Full Plate",
+    "food_name_bn": "তেহারি",
+    "serving_size": "1 plate",
+    "calories": 920,
+    "protein_g": 36,
+    "fat_g": 38,
+    "carbs_g": 104
+  },
+  {
+    "id": 327,
+    "food_name_en": "Chicken Roast Full",
+    "food_name_bn": "চিকেন রোস্ট",
+    "serving_size": "1 piece",
+    "calories": 420,
+    "protein_g": 32,
+    "fat_g": 28,
+    "carbs_g": 10
+  },
+  {
+    "id": 328,
+    "food_name_en": "Borhani Large",
+    "food_name_bn": "বোরহানি",
+    "serving_size": "300ml",
+    "calories": 180,
+    "protein_g": 6,
+    "fat_g": 7,
+    "carbs_g": 23
+  },
+  {
+    "id": 329,
+    "food_name_en": "Laccha Semai",
+    "food_name_bn": "লাচ্ছা সেমাই",
+    "serving_size": "1 bowl",
+    "calories": 420,
+    "protein_g": 8,
+    "fat_g": 14,
+    "carbs_g": 64
+  },
+  {
+    "id": 330,
+    "food_name_en": "Zarda",
+    "food_name_bn": "জর্দা",
+    "serving_size": "1 bowl",
+    "calories": 390,
+    "protein_g": 4,
+    "fat_g": 11,
+    "carbs_g": 68
+  },
+  {
+    "id": 331,
+    "food_name_en": "Kheer",
+    "food_name_bn": "ক্ষীর",
+    "serving_size": "1 bowl",
+    "calories": 340,
+    "protein_g": 8,
+    "fat_g": 10,
+    "carbs_g": 54
+  },
+  {
+    "id": 332,
+    "food_name_en": "Malai Tea",
+    "food_name_bn": "মালাই চা",
+    "serving_size": "1 cup",
+    "calories": 180,
+    "protein_g": 4,
+    "fat_g": 8,
+    "carbs_g": 24
+  },
+  {
+    "id": 333,
+    "food_name_en": "Seven Up",
+    "food_name_bn": "সেভেন আপ",
+    "serving_size": "250ml",
+    "calories": 105,
+    "protein_g": 0,
+    "fat_g": 0,
+    "carbs_g": 26
+  },
+  {
+    "id": 334,
+    "food_name_en": "Coca Cola",
+    "food_name_bn": "কোকাকোলা",
+    "serving_size": "250ml",
+    "calories": 110,
+    "protein_g": 0,
+    "fat_g": 0,
+    "carbs_g": 27
+  },
+  {
+    "id": 335,
+    "food_name_en": "Pepsi",
+    "food_name_bn": "পেপসি",
+    "serving_size": "250ml",
+    "calories": 109,
+    "protein_g": 0,
+    "fat_g": 0,
+    "carbs_g": 27
+  },
+  {
+    "id": 336,
+    "food_name_en": "Mojo",
+    "food_name_bn": "মোজো",
+    "serving_size": "250ml",
+    "calories": 118,
+    "protein_g": 0,
+    "fat_g": 0,
+    "carbs_g": 29
+  },
+  {
+    "id": 337,
+    "food_name_en": "Speed Energy Drink",
+    "food_name_bn": "স্পিড",
+    "serving_size": "250ml",
+    "calories": 125,
+    "protein_g": 0,
+    "fat_g": 0,
+    "carbs_g": 31
+  },
+  {
+    "id": 338,
+    "food_name_en": "Tiger Energy Drink",
+    "food_name_bn": "টাইগার",
+    "serving_size": "250ml",
+    "calories": 130,
+    "protein_g": 0,
+    "fat_g": 0,
+    "carbs_g": 32
+  },
+  {
+    "id": 339,
+    "food_name_en": "Pran Mango Bar",
+    "food_name_bn": "ম্যাঙ্গো বার",
+    "serving_size": "1 piece",
+    "calories": 75,
+    "protein_g": 0,
+    "fat_g": 0,
+    "carbs_g": 19
+  },
+  {
+    "id": 340,
+    "food_name_en": "Chocolate Bar",
+    "food_name_bn": "চকলেট বার",
+    "serving_size": "1 piece",
+    "calories": 230,
+    "protein_g": 3,
+    "fat_g": 12,
+    "carbs_g": 28
+  },
+  {
+    "id": 341,
+    "food_name_en": "Snickers",
+    "food_name_bn": "স্নিকার্স",
+    "serving_size": "1 bar",
+    "calories": 250,
+    "protein_g": 4,
+    "fat_g": 12,
+    "carbs_g": 31
+  },
+  {
+    "id": 342,
+    "food_name_en": "KitKat",
+    "food_name_bn": "কিটক্যাট",
+    "serving_size": "1 bar",
+    "calories": 220,
+    "protein_g": 3,
+    "fat_g": 11,
+    "carbs_g": 27
+  },
+  {
+    "id": 343,
+    "food_name_en": "Dairy Milk",
+    "food_name_bn": "ডেইরি মিল্ক",
+    "serving_size": "1 bar",
+    "calories": 240,
+    "protein_g": 3,
+    "fat_g": 13,
+    "carbs_g": 28
+  },
+  {
+    "id": 344,
+    "food_name_en": "Lays Chips",
+    "food_name_bn": "লেইস চিপস",
+    "serving_size": "50g",
+    "calories": 270,
+    "protein_g": 3,
+    "fat_g": 16,
+    "carbs_g": 28
+  },
+  {
+    "id": 345,
+    "food_name_en": "Doritos",
+    "food_name_bn": "ডরিটোস",
+    "serving_size": "50g",
+    "calories": 255,
+    "protein_g": 4,
+    "fat_g": 13,
+    "carbs_g": 30
+  },
+  {
+    "id": 346,
+    "food_name_en": "Kurkure",
+    "food_name_bn": "কুরকুরে",
+    "serving_size": "50g",
+    "calories": 260,
+    "protein_g": 4,
+    "fat_g": 14,
+    "carbs_g": 29
+  },
+  {
+    "id": 347,
+    "food_name_en": "Chicken Cheese Loaded Fries",
+    "food_name_bn": "চিকেন চিজ ফ্রাই",
+    "serving_size": "1 plate",
+    "calories": 780,
+    "protein_g": 28,
+    "fat_g": 42,
+    "carbs_g": 70
+  },
+  {
+    "id": 348,
+    "food_name_en": "Beef Cheese Loaded Fries",
+    "food_name_bn": "বিফ চিজ ফ্রাই",
+    "serving_size": "1 plate",
+    "calories": 890,
+    "protein_g": 32,
+    "fat_g": 51,
+    "carbs_g": 72
+  },
+  {
+    "id": 349,
+    "food_name_en": "Mega Burger",
+    "food_name_bn": "মেগা বার্গার",
+    "serving_size": "1 piece",
+    "calories": 950,
+    "protein_g": 42,
+    "fat_g": 58,
+    "carbs_g": 65
+  },
+  {
+    "id": 350,
+    "food_name_en": "Family Pizza Slice",
+    "food_name_bn": "ফ্যামিলি পিজ্জা স্লাইস",
+    "serving_size": "1 giant slice",
+    "calories": 520,
+    "protein_g": 22,
+    "fat_g": 24,
+    "carbs_g": 54
+  },
+  {
+    "id": 351,
+    "food_name_en": "Kalo Bhuna Rice Combo",
+    "food_name_bn": "কালাভুনা ভাত",
+    "serving_size": "1 plate",
+    "calories": 820,
+    "protein_g": 32,
+    "fat_g": 38,
+    "carbs_g": 82
+  },
+  {
+    "id": 352,
+    "food_name_en": "Beef Khichuri",
+    "food_name_bn": "বিফ খিচুড়ি",
+    "serving_size": "1 bowl",
+    "calories": 480,
+    "protein_g": 20,
+    "fat_g": 18,
+    "carbs_g": 58
+  },
+  {
+    "id": 353,
+    "food_name_en": "Chicken Khichuri",
+    "food_name_bn": "চিকেন খিচুড়ি",
+    "serving_size": "1 bowl",
+    "calories": 420,
+    "protein_g": 22,
+    "fat_g": 12,
+    "carbs_g": 55
+  },
+  {
+    "id": 354,
+    "food_name_en": "Bhuna Khichuri",
+    "food_name_bn": "ভুনা খিচুড়ি",
+    "serving_size": "1 bowl",
+    "calories": 390,
+    "protein_g": 10,
+    "fat_g": 14,
+    "carbs_g": 55
+  },
+  {
+    "id": 355,
+    "food_name_en": "Duck Khichuri",
+    "food_name_bn": "হাঁসের খিচুড়ি",
+    "serving_size": "1 bowl",
+    "calories": 540,
+    "protein_g": 24,
+    "fat_g": 24,
+    "carbs_g": 58
+  },
+  {
+    "id": 356,
+    "food_name_en": "Beef Bhuna Khichuri",
+    "food_name_bn": "বিফ ভুনা খিচুড়ি",
+    "serving_size": "1 bowl",
+    "calories": 570,
+    "protein_g": 25,
+    "fat_g": 26,
+    "carbs_g": 60
+  },
+  {
+    "id": 357,
+    "food_name_en": "Chui Jhal Beef",
+    "food_name_bn": "চুই ঝাল গরুর মাংস",
+    "serving_size": "100g",
+    "calories": 340,
+    "protein_g": 25,
+    "fat_g": 24,
+    "carbs_g": 4
+  },
+  {
+    "id": 358,
+    "food_name_en": "Chui Jhal Mutton",
+    "food_name_bn": "চুই ঝাল খাসি",
+    "serving_size": "100g",
+    "calories": 390,
+    "protein_g": 24,
+    "fat_g": 31,
+    "carbs_g": 3
+  },
+  {
+    "id": 359,
+    "food_name_en": "Beef Achari",
+    "food_name_bn": "আচারি বিফ",
+    "serving_size": "100g",
+    "calories": 320,
+    "protein_g": 24,
+    "fat_g": 21,
+    "carbs_g": 5
+  },
+  {
+    "id": 360,
+    "food_name_en": "Chicken Achari",
+    "food_name_bn": "আচারি চিকেন",
+    "serving_size": "100g",
+    "calories": 270,
+    "protein_g": 22,
+    "fat_g": 17,
+    "carbs_g": 5
+  },
+  {
+    "id": 361,
+    "food_name_en": "Lau Chingri",
+    "food_name_bn": "লাউ চিংড়ি",
+    "serving_size": "100g",
+    "calories": 180,
+    "protein_g": 15,
+    "fat_g": 9,
+    "carbs_g": 8
+  },
+  {
+    "id": 362,
+    "food_name_en": "Mocha Ghonto",
+    "food_name_bn": "মোচা ঘন্ট",
+    "serving_size": "100g",
+    "calories": 140,
+    "protein_g": 4,
+    "fat_g": 7,
+    "carbs_g": 16
+  },
+  {
+    "id": 363,
+    "food_name_en": "Thor Curry",
+    "food_name_bn": "থোরের তরকারি",
+    "serving_size": "100g",
+    "calories": 110,
+    "protein_g": 3,
+    "fat_g": 5,
+    "carbs_g": 14
+  },
+  {
+    "id": 364,
+    "food_name_en": "Kochu Shak",
+    "food_name_bn": "কচু শাক",
+    "serving_size": "100g",
+    "calories": 85,
+    "protein_g": 3,
+    "fat_g": 4,
+    "carbs_g": 10
+  },
+  {
+    "id": 365,
+    "food_name_en": "Kochur Loti",
+    "food_name_bn": "কচুর লতি",
+    "serving_size": "100g",
+    "calories": 95,
+    "protein_g": 3,
+    "fat_g": 5,
+    "carbs_g": 11
+  },
+  {
+    "id": 366,
+    "food_name_en": "Kochur Mukhi",
+    "food_name_bn": "কচুর মুখি",
+    "serving_size": "100g",
+    "calories": 130,
+    "protein_g": 2,
+    "fat_g": 4,
+    "carbs_g": 24
+  },
+  {
+    "id": 367,
+    "food_name_en": "Dudh Kochu",
+    "food_name_bn": "দুধ কচু",
+    "serving_size": "100g",
+    "calories": 120,
+    "protein_g": 2,
+    "fat_g": 5,
+    "carbs_g": 18
+  },
+  {
+    "id": 368,
+    "food_name_en": "Shorshe Ilish",
+    "food_name_bn": "সরিষা ইলিশ",
+    "serving_size": "100g",
+    "calories": 360,
+    "protein_g": 23,
+    "fat_g": 28,
+    "carbs_g": 3
+  },
+  {
+    "id": 369,
+    "food_name_en": "Ilish Bhapa",
+    "food_name_bn": "ইলিশ ভাপা",
+    "serving_size": "100g",
+    "calories": 340,
+    "protein_g": 22,
+    "fat_g": 26,
+    "carbs_g": 2
+  },
+  {
+    "id": 370,
+    "food_name_en": "Ilish Pulao",
+    "food_name_bn": "ইলিশ পোলাও",
+    "serving_size": "1 plate",
+    "calories": 920,
+    "protein_g": 35,
+    "fat_g": 42,
+    "carbs_g": 96
+  },
+  {
+    "id": 371,
+    "food_name_en": "Boal Bhuna",
+    "food_name_bn": "বোয়াল ভুনা",
+    "serving_size": "100g",
+    "calories": 260,
+    "protein_g": 21,
+    "fat_g": 18,
+    "carbs_g": 2
+  },
+  {
+    "id": 372,
+    "food_name_en": "Pabda Jhal",
+    "food_name_bn": "পাবদা ঝাল",
+    "serving_size": "100g",
+    "calories": 210,
+    "protein_g": 19,
+    "fat_g": 13,
+    "carbs_g": 3
+  },
+  {
+    "id": 373,
+    "food_name_en": "Koi Fish Bhuna",
+    "food_name_bn": "কই মাছ ভুনা",
+    "serving_size": "100g",
+    "calories": 230,
+    "protein_g": 20,
+    "fat_g": 15,
+    "carbs_g": 2
+  },
+  {
+    "id": 374,
+    "food_name_en": "Shing Fish Curry",
+    "food_name_bn": "শিং মাছের ঝোল",
+    "serving_size": "100g",
+    "calories": 220,
+    "protein_g": 21,
+    "fat_g": 14,
+    "carbs_g": 2
+  },
+  {
+    "id": 375,
+    "food_name_en": "Magur Fish Curry",
+    "food_name_bn": "মাগুর মাছের ঝোল",
+    "serving_size": "100g",
+    "calories": 225,
+    "protein_g": 22,
+    "fat_g": 13,
+    "carbs_g": 3
+  },
+  {
+    "id": 376,
+    "food_name_en": "Rui Kalia",
+    "food_name_bn": "রুই কালিয়া",
+    "serving_size": "100g",
+    "calories": 260,
+    "protein_g": 20,
+    "fat_g": 18,
+    "carbs_g": 4
+  },
+  {
+    "id": 377,
+    "food_name_en": "Katla Kalia",
+    "food_name_bn": "কাতলা কালিয়া",
+    "serving_size": "100g",
+    "calories": 270,
+    "protein_g": 21,
+    "fat_g": 19,
+    "carbs_g": 4
+  },
+  {
+    "id": 378,
+    "food_name_en": "Chicken Chaap Paratha Combo",
+    "food_name_bn": "চিকেন চাপ পরোটা",
+    "serving_size": "1 serving",
+    "calories": 840,
+    "protein_g": 34,
+    "fat_g": 42,
+    "carbs_g": 78
+  },
+  {
+    "id": 379,
+    "food_name_en": "Beef Chaap Paratha Combo",
+    "food_name_bn": "বিফ চাপ পরোটা",
+    "serving_size": "1 serving",
+    "calories": 980,
+    "protein_g": 38,
+    "fat_g": 55,
+    "carbs_g": 80
+  },
+  {
+    "id": 380,
+    "food_name_en": "Mughlai Paratha",
+    "food_name_bn": "মোগলাই পরোটা",
+    "serving_size": "1 piece",
+    "calories": 620,
+    "protein_g": 18,
+    "fat_g": 34,
+    "carbs_g": 58
+  },
+  {
+    "id": 381,
+    "food_name_en": "Chicken Mughlai",
+    "food_name_bn": "চিকেন মোগলাই",
+    "serving_size": "1 piece",
+    "calories": 690,
+    "protein_g": 24,
+    "fat_g": 38,
+    "carbs_g": 60
+  },
+  {
+    "id": 382,
+    "food_name_en": "Beef Mughlai",
+    "food_name_bn": "বিফ মোগলাই",
+    "serving_size": "1 piece",
+    "calories": 760,
+    "protein_g": 28,
+    "fat_g": 44,
+    "carbs_g": 62
+  },
+  {
+    "id": 383,
+    "food_name_en": "Bakarkhani with Tea",
+    "food_name_bn": "বাকরখানি ও চা",
+    "serving_size": "1 serving",
+    "calories": 340,
+    "protein_g": 6,
+    "fat_g": 12,
+    "carbs_g": 52
+  },
+  {
+    "id": 384,
+    "food_name_en": "Malai Bun",
+    "food_name_bn": "মালাই বন",
+    "serving_size": "1 piece",
+    "calories": 280,
+    "protein_g": 5,
+    "fat_g": 10,
+    "carbs_g": 42
+  },
+  {
+    "id": 385,
+    "food_name_en": "Cream Bun",
+    "food_name_bn": "ক্রিম বান",
+    "serving_size": "1 piece",
+    "calories": 320,
+    "protein_g": 5,
+    "fat_g": 14,
+    "carbs_g": 44
+  },
+  {
+    "id": 386,
+    "food_name_en": "Chicken Puff",
+    "food_name_bn": "চিকেন পাফ",
+    "serving_size": "1 piece",
+    "calories": 350,
+    "protein_g": 11,
+    "fat_g": 20,
+    "carbs_g": 31
+  },
+  {
+    "id": 387,
+    "food_name_en": "Beef Puff",
+    "food_name_bn": "বিফ পাফ",
+    "serving_size": "1 piece",
+    "calories": 390,
+    "protein_g": 13,
+    "fat_g": 24,
+    "carbs_g": 30
+  },
+  {
+    "id": 388,
+    "food_name_en": "Sausage Roll",
+    "food_name_bn": "সসেজ রোল",
+    "serving_size": "1 piece",
+    "calories": 410,
+    "protein_g": 12,
+    "fat_g": 25,
+    "carbs_g": 34
+  },
+  {
+    "id": 389,
+    "food_name_en": "Chicken Bun",
+    "food_name_bn": "চিকেন বান",
+    "serving_size": "1 piece",
+    "calories": 290,
+    "protein_g": 10,
+    "fat_g": 12,
+    "carbs_g": 36
+  },
+  {
+    "id": 390,
+    "food_name_en": "Beef Bun",
+    "food_name_bn": "বিফ বান",
+    "serving_size": "1 piece",
+    "calories": 330,
+    "protein_g": 12,
+    "fat_g": 16,
+    "carbs_g": 35
+  },
+  {
+    "id": 391,
+    "food_name_en": "Chicken Samosa",
+    "food_name_bn": "চিকেন সমুচা",
+    "serving_size": "1 piece",
+    "calories": 180,
+    "protein_g": 6,
+    "fat_g": 10,
+    "carbs_g": 17
+  },
+  {
+    "id": 392,
+    "food_name_en": "Beef Samosa",
+    "food_name_bn": "বিফ সমুচা",
+    "serving_size": "1 piece",
+    "calories": 220,
+    "protein_g": 8,
+    "fat_g": 13,
+    "carbs_g": 18
+  },
+  {
+    "id": 393,
+    "food_name_en": "Chicken Singara",
+    "food_name_bn": "চিকেন সিঙ্গারা",
+    "serving_size": "1 piece",
+    "calories": 210,
+    "protein_g": 7,
+    "fat_g": 12,
+    "carbs_g": 19
+  },
+  {
+    "id": 394,
+    "food_name_en": "Beef Singara",
+    "food_name_bn": "বিফ সিঙ্গারা",
+    "serving_size": "1 piece",
+    "calories": 240,
+    "protein_g": 8,
+    "fat_g": 15,
+    "carbs_g": 18
+  },
+  {
+    "id": 395,
+    "food_name_en": "Jhal Chanachur",
+    "food_name_bn": "ঝাল চানাচুর",
+    "serving_size": "100g",
+    "calories": 560,
+    "protein_g": 11,
+    "fat_g": 37,
+    "carbs_g": 45
+  },
+  {
+    "id": 396,
+    "food_name_en": "Bombay Mix",
+    "food_name_bn": "বোম্বে মিক্স",
+    "serving_size": "100g",
+    "calories": 540,
+    "protein_g": 10,
+    "fat_g": 34,
+    "carbs_g": 47
+  },
+  {
+    "id": 397,
+    "food_name_en": "Roasted Chola",
+    "food_name_bn": "ভাজা ছোলা",
+    "serving_size": "100g",
+    "calories": 370,
+    "protein_g": 21,
+    "fat_g": 6,
+    "carbs_g": 58
+  },
+  {
+    "id": 398,
+    "food_name_en": "Mixed Nuts",
+    "food_name_bn": "মিক্সড নাটস",
+    "serving_size": "100g",
+    "calories": 620,
+    "protein_g": 21,
+    "fat_g": 54,
+    "carbs_g": 18
+  },
+  {
+    "id": 399,
+    "food_name_en": "Cashew Nuts",
+    "food_name_bn": "কাজুবাদাম",
+    "serving_size": "100g",
+    "calories": 595,
+    "protein_g": 18,
+    "fat_g": 47,
+    "carbs_g": 24
+  },
+  {
+    "id": 400,
+    "food_name_en": "Pistachio",
+    "food_name_bn": "পেস্তা বাদাম",
+    "serving_size": "100g",
+    "calories": 560,
+    "protein_g": 20,
+    "fat_g": 45,
+    "carbs_g": 28
+  },
+  {
+    "id": 401,
+    "food_name_en": "Almonds",
+    "food_name_bn": "কাঠবাদাম",
+    "serving_size": "100g",
+    "calories": 579,
+    "protein_g": 21,
+    "fat_g": 50,
+    "carbs_g": 22
+  },
+  {
+    "id": 402,
+    "food_name_en": "Walnuts",
+    "food_name_bn": "আখরোট",
+    "serving_size": "100g",
+    "calories": 654,
+    "protein_g": 15,
+    "fat_g": 65,
+    "carbs_g": 14
+  },
+  {
+    "id": 403,
+    "food_name_en": "Hazelnuts",
+    "food_name_bn": "হ্যাজেলনাট",
+    "serving_size": "100g",
+    "calories": 628,
+    "protein_g": 15,
+    "fat_g": 61,
+    "carbs_g": 17
+  },
+  {
+    "id": 404,
+    "food_name_en": "Sunflower Seeds",
+    "food_name_bn": "সূর্যমুখী বীজ",
+    "serving_size": "100g",
+    "calories": 584,
+    "protein_g": 21,
+    "fat_g": 51,
+    "carbs_g": 20
+  },
+  {
+    "id": 405,
+    "food_name_en": "Pumpkin Seeds",
+    "food_name_bn": "কুমড়ার বীজ",
+    "serving_size": "100g",
+    "calories": 559,
+    "protein_g": 30,
+    "fat_g": 49,
+    "carbs_g": 11
+  },
+  {
+    "id": 406,
+    "food_name_en": "Chia Seeds",
+    "food_name_bn": "চিয়া সিড",
+    "serving_size": "100g",
+    "calories": 486,
+    "protein_g": 17,
+    "fat_g": 31,
+    "carbs_g": 42
+  },
+  {
+    "id": 407,
+    "food_name_en": "Flax Seeds",
+    "food_name_bn": "তিসি বীজ",
+    "serving_size": "100g",
+    "calories": 534,
+    "protein_g": 18,
+    "fat_g": 42,
+    "carbs_g": 29
+  },
+  {
+    "id": 408,
+    "food_name_en": "Oats",
+    "food_name_bn": "ওটস",
+    "serving_size": "100g",
+    "calories": 389,
+    "protein_g": 17,
+    "fat_g": 7,
+    "carbs_g": 66
+  },
+  {
+    "id": 409,
+    "food_name_en": "Oatmeal",
+    "food_name_bn": "ওটমিল",
+    "serving_size": "1 bowl",
+    "calories": 220,
+    "protein_g": 8,
+    "fat_g": 4,
+    "carbs_g": 38
+  },
+  {
+    "id": 410,
+    "food_name_en": "Granola",
+    "food_name_bn": "গ্রানোলা",
+    "serving_size": "100g",
+    "calories": 470,
+    "protein_g": 10,
+    "fat_g": 20,
+    "carbs_g": 64
+  },
+  {
+    "id": 411,
+    "food_name_en": "Cornflakes",
+    "food_name_bn": "কর্নফ্লেক্স",
+    "serving_size": "100g",
+    "calories": 357,
+    "protein_g": 8,
+    "fat_g": 1,
+    "carbs_g": 84
+  },
+  {
+    "id": 412,
+    "food_name_en": "Muesli",
+    "food_name_bn": "মুয়েসলি",
+    "serving_size": "100g",
+    "calories": 370,
+    "protein_g": 13,
+    "fat_g": 7,
+    "carbs_g": 64
+  },
+  {
+    "id": 413,
+    "food_name_en": "Peanut Butter",
+    "food_name_bn": "পিনাট বাটার",
+    "serving_size": "100g",
+    "calories": 588,
+    "protein_g": 25,
+    "fat_g": 50,
+    "carbs_g": 20
+  },
+  {
+    "id": 414,
+    "food_name_en": "Nutella",
+    "food_name_bn": "নুটেলা",
+    "serving_size": "100g",
+    "calories": 539,
+    "protein_g": 6,
+    "fat_g": 31,
+    "carbs_g": 57
+  },
+  {
+    "id": 415,
+    "food_name_en": "Honey",
+    "food_name_bn": "মধু",
+    "serving_size": "100g",
+    "calories": 304,
+    "protein_g": 0,
+    "fat_g": 0,
+    "carbs_g": 82
+  },
+  {
+    "id": 416,
+    "food_name_en": "Jaggery",
+    "food_name_bn": "গুড়",
+    "serving_size": "100g",
+    "calories": 383,
+    "protein_g": 0,
+    "fat_g": 0,
+    "carbs_g": 98
+  },
+  {
+    "id": 417,
+    "food_name_en": "Sugar",
+    "food_name_bn": "চিনি",
+    "serving_size": "100g",
+    "calories": 387,
+    "protein_g": 0,
+    "fat_g": 0,
+    "carbs_g": 100
+  },
+  {
+    "id": 418,
+    "food_name_en": "Brown Sugar",
+    "food_name_bn": "ব্রাউন সুগার",
+    "serving_size": "100g",
+    "calories": 380,
+    "protein_g": 0,
+    "fat_g": 0,
+    "carbs_g": 98
+  },
+  {
+    "id": 419,
+    "food_name_en": "White Rice Cooked",
+    "food_name_bn": "সাদা ভাত",
+    "serving_size": "100g",
+    "calories": 130,
+    "protein_g": 2.7,
+    "fat_g": 0.3,
+    "carbs_g": 28
+  },
+  {
+    "id": 420,
+    "food_name_en": "Brown Rice Cooked",
+    "food_name_bn": "ব্রাউন রাইস",
+    "serving_size": "100g",
+    "calories": 123,
+    "protein_g": 2.7,
+    "fat_g": 1,
+    "carbs_g": 25
+  },
+  {
+    "id": 421,
+    "food_name_en": "Basmati Rice",
+    "food_name_bn": "বাসমতি চাল",
+    "serving_size": "100g cooked",
+    "calories": 121,
+    "protein_g": 3,
+    "fat_g": 0.4,
+    "carbs_g": 26
+  },
+  {
+    "id": 422,
+    "food_name_en": "Red Rice",
+    "food_name_bn": "লাল চাল",
+    "serving_size": "100g cooked",
+    "calories": 125,
+    "protein_g": 3,
+    "fat_g": 1,
+    "carbs_g": 25
+  },
+  {
+    "id": 423,
+    "food_name_en": "Barley",
+    "food_name_bn": "যব",
+    "serving_size": "100g",
+    "calories": 354,
+    "protein_g": 12,
+    "fat_g": 2,
+    "carbs_g": 73
+  },
+  {
+    "id": 424,
+    "food_name_en": "Quinoa",
+    "food_name_bn": "কুইনোয়া",
+    "serving_size": "100g cooked",
+    "calories": 120,
+    "protein_g": 4,
+    "fat_g": 2,
+    "carbs_g": 21
+  },
+  {
+    "id": 425,
+    "food_name_en": "Sweet Potato",
+    "food_name_bn": "মিষ্টি আলু",
+    "serving_size": "100g",
+    "calories": 86,
+    "protein_g": 1.6,
+    "fat_g": 0.1,
+    "carbs_g": 20
+  },
+  {
+    "id": 426,
+    "food_name_en": "Boiled Potato",
+    "food_name_bn": "সেদ্ধ আলু",
+    "serving_size": "100g",
+    "calories": 87,
+    "protein_g": 2,
+    "fat_g": 0.1,
+    "carbs_g": 20
+  },
+  {
+    "id": 427,
+    "food_name_en": "French Toast",
+    "food_name_bn": "ফ্রেঞ্চ টোস্ট",
+    "serving_size": "2 pieces",
+    "calories": 320,
+    "protein_g": 10,
+    "fat_g": 14,
+    "carbs_g": 37
+  },
+  {
+    "id": 428,
+    "food_name_en": "Egg Toast",
+    "food_name_bn": "ডিম টোস্ট",
+    "serving_size": "2 pieces",
+    "calories": 280,
+    "protein_g": 11,
+    "fat_g": 12,
+    "carbs_g": 30
+  },
+  {
+    "id": 429,
+    "food_name_en": "Butter Toast",
+    "food_name_bn": "বাটার টোস্ট",
+    "serving_size": "2 pieces",
+    "calories": 240,
+    "protein_g": 5,
+    "fat_g": 10,
+    "carbs_g": 32
+  },
+  {
+    "id": 430,
+    "food_name_en": "Jam Toast",
+    "food_name_bn": "জ্যাম টোস্ট",
+    "serving_size": "2 pieces",
+    "calories": 260,
+    "protein_g": 4,
+    "fat_g": 4,
+    "carbs_g": 52
+  },
+  {
+    "id": 431,
+    "food_name_en": "Banana",
+    "food_name_bn": "কলা",
+    "serving_size": "1 medium",
+    "calories": 105,
+    "protein_g": 1.3,
+    "fat_g": 0.3,
+    "carbs_g": 27
+  },
+  {
+    "id": 432,
+    "food_name_en": "Apple",
+    "food_name_bn": "আপেল",
+    "serving_size": "1 medium",
+    "calories": 95,
+    "protein_g": 0.5,
+    "fat_g": 0.3,
+    "carbs_g": 25
+  },
+  {
+    "id": 433,
+    "food_name_en": "Orange",
+    "food_name_bn": "কমলা",
+    "serving_size": "1 medium",
+    "calories": 62,
+    "protein_g": 1.2,
+    "fat_g": 0.2,
+    "carbs_g": 15
+  },
+  {
+    "id": 434,
+    "food_name_en": "Mango",
+    "food_name_bn": "আম",
+    "serving_size": "100g",
+    "calories": 60,
+    "protein_g": 0.8,
+    "fat_g": 0.4,
+    "carbs_g": 15
+  },
+  {
+    "id": 435,
+    "food_name_en": "Dragon Fruit",
+    "food_name_bn": "ড্রাগন ফল",
+    "serving_size": "100g",
+    "calories": 57,
+    "protein_g": 1.2,
+    "fat_g": 0.1,
+    "carbs_g": 13
+  },
+  {
+    "id": 436,
+    "food_name_en": "Avocado",
+    "food_name_bn": "অ্যাভোকাডো",
+    "serving_size": "100g",
+    "calories": 160,
+    "protein_g": 2,
+    "fat_g": 15,
+    "carbs_g": 9
+  },
+  {
+    "id": 437,
+    "food_name_en": "Strawberry",
+    "food_name_bn": "স্ট্রবেরি",
+    "serving_size": "100g",
+    "calories": 32,
+    "protein_g": 0.7,
+    "fat_g": 0.3,
+    "carbs_g": 8
+  },
+  {
+    "id": 438,
+    "food_name_en": "Blueberry",
+    "food_name_bn": "ব্লুবেরি",
+    "serving_size": "100g",
+    "calories": 57,
+    "protein_g": 0.7,
+    "fat_g": 0.3,
+    "carbs_g": 14
+  },
+  {
+    "id": 439,
+    "food_name_en": "Grapes",
+    "food_name_bn": "আঙ্গুর",
+    "serving_size": "100g",
+    "calories": 69,
+    "protein_g": 0.7,
+    "fat_g": 0.2,
+    "carbs_g": 18
+  },
+  {
+    "id": 440,
+    "food_name_en": "Kiwi",
+    "food_name_bn": "কিউই",
+    "serving_size": "100g",
+    "calories": 61,
+    "protein_g": 1.1,
+    "fat_g": 0.5,
+    "carbs_g": 15
+  },
+  {
+    "id": 441,
+    "food_name_en": "Protein Shake",
+    "food_name_bn": "প্রোটিন শেক",
+    "serving_size": "1 scoop",
+    "calories": 120,
+    "protein_g": 24,
+    "fat_g": 1,
+    "carbs_g": 3
+  },
+  {
+    "id": 442,
+    "food_name_en": "Whey Protein",
+    "food_name_bn": "হুই প্রোটিন",
+    "serving_size": "30g",
+    "calories": 118,
+    "protein_g": 24,
+    "fat_g": 1,
+    "carbs_g": 2
+  },
+  {
+    "id": 443,
+    "food_name_en": "Mass Gainer",
+    "food_name_bn": "মাস গেইনার",
+    "serving_size": "100g",
+    "calories": 380,
+    "protein_g": 20,
+    "fat_g": 5,
+    "carbs_g": 65
+  },
+  {
+    "id": 444,
+    "food_name_en": "Greek Yogurt",
+    "food_name_bn": "গ্রিক দই",
+    "serving_size": "100g",
+    "calories": 97,
+    "protein_g": 10,
+    "fat_g": 5,
+    "carbs_g": 4
+  },
+  {
+    "id": 445,
+    "food_name_en": "Cottage Cheese",
+    "food_name_bn": "পনির",
+    "serving_size": "100g",
+    "calories": 265,
+    "protein_g": 18,
+    "fat_g": 20,
+    "carbs_g": 3
+  },
+  {
+    "id": 446,
+    "food_name_en": "Tofu",
+    "food_name_bn": "টোফু",
+    "serving_size": "100g",
+    "calories": 76,
+    "protein_g": 8,
+    "fat_g": 5,
+    "carbs_g": 2
+  },
+  {
+    "id": 447,
+    "food_name_en": "Soy Milk",
+    "food_name_bn": "সয়া দুধ",
+    "serving_size": "250ml",
+    "calories": 80,
+    "protein_g": 7,
+    "fat_g": 4,
+    "carbs_g": 4
+  },
+  {
+    "id": 448,
+    "food_name_en": "Almond Milk",
+    "food_name_bn": "আলমন্ড মিল্ক",
+    "serving_size": "250ml",
+    "calories": 40,
+    "protein_g": 1,
+    "fat_g": 3,
+    "carbs_g": 2
+  },
+  {
+    "id": 449,
+    "food_name_en": "Black Coffee",
+    "food_name_bn": "ব্ল্যাক কফি",
+    "serving_size": "1 cup",
+    "calories": 2,
+    "protein_g": 0,
+    "fat_g": 0,
+    "carbs_g": 0
+  },
+  {
+    "id": 450,
+    "food_name_en": "Green Tea",
+    "food_name_bn": "গ্রিন টি",
+    "serving_size": "1 cup",
+    "calories": 2,
+    "protein_g": 0,
+    "fat_g": 0,
+    "carbs_g": 0
   }
+
+
 ]
