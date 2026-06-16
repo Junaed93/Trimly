@@ -5,9 +5,9 @@ import { useTheme } from '../../context/ThemeContext';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import * as Icons from 'lucide-react-native';
 
-let LiquidTabBar: any = null;
+let DraggableTabBar: any = null;
 if (Platform.OS !== 'web') {
-  LiquidTabBar = require('liquidglass-rn').LiquidTabBar;
+  DraggableTabBar = require('../../components/DraggableTabBar').DraggableTabBar;
 }
 
 const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
@@ -87,13 +87,15 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
 
   return (
     <View style={styles.tabBarContainer}>
-      <LiquidTabBar
-        routes={routes}
-        activeIndex={Math.max(0, activeIndex)}
-        onChange={onChange}
-        activeColor={theme.primary}
-        inactiveColor={theme.textMuted}
-      />
+      {DraggableTabBar && (
+        <DraggableTabBar
+          routes={routes}
+          activeIndex={Math.max(0, activeIndex)}
+          onChange={onChange}
+          activeColor={theme.primary}
+          inactiveColor={theme.textMuted}
+        />
+      )}
     </View>
   );
 };

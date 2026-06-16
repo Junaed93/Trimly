@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, Platform, ScrollView, FlatList, TouchableOpacity, Modal, TextInput, KeyboardAvoidingView } from 'react-native';
+import { View, Text, StyleSheet, Platform, ScrollView, FlatList, TouchableOpacity, Modal, TextInput, KeyboardAvoidingView, Pressable, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Icons from 'lucide-react-native';
 import { useFocusEffect } from 'expo-router';
@@ -154,7 +154,7 @@ export default function FoodScreen() {
         </View>
         <View style={styles.foodCardContent}>
           <Text style={[styles.foodName, { color: theme.text }]} numberOfLines={1}>
-            {item.food_name_en}
+            {item.food_name_en} {item.food_name_bn ? `(${item.food_name_bn})` : ''}
           </Text>
           <Text style={[styles.foodServing, { color: theme.textMuted }]}>
             {item.calories} kcal / {item.serving_size}
@@ -227,6 +227,7 @@ export default function FoodScreen() {
               ))}
             </ScrollView>
             <FlatList
+              style={{ flex: 1 }}
               data={filteredFoods}
               keyExtractor={item => item.id.toString()}
               renderItem={renderFoodCard}
@@ -289,10 +290,14 @@ export default function FoodScreen() {
       {/* Fast Logging Modal */}
       {selectedFood && (
         <Modal transparent visible animationType="fade">
-          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => { Keyboard.dismiss(); setSelectedFood(null); }} />
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay} pointerEvents="box-none">
             <Animated.View entering={SlideInDown.springify()} style={[styles.modalContent, { backgroundColor: theme.surfaceRaised, borderColor: theme.border }]}>
+              <Pressable style={StyleSheet.absoluteFill} onPress={Keyboard.dismiss} />
               <View style={styles.modalHeader}>
-                <Text style={[styles.modalTitle, { color: theme.text }]} numberOfLines={1}>{selectedFood.food_name_en}</Text>
+                <Text style={[styles.modalTitle, { color: theme.text }]} numberOfLines={1}>
+                  {selectedFood.food_name_en} {selectedFood.food_name_bn ? `(${selectedFood.food_name_bn})` : ''}
+                </Text>
                 <TouchableOpacity onPress={() => setSelectedFood(null)} style={styles.closeBtn}>
                   <Icons.X size={24} color={theme.textMuted} />
                 </TouchableOpacity>
@@ -409,7 +414,9 @@ const styles = StyleSheet.create({
   },
   categoryScroll: {
     flexGrow: 0,
+    flexShrink: 0,
     marginBottom: 16,
+    maxHeight: 45,
   },
   categoryChip: {
     paddingHorizontal: 16,
@@ -532,14 +539,13 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.7)',
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
+    padding: 20,
   },
   modalContent: {
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
+    borderRadius: 32,
     borderWidth: 1,
     padding: 24,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
   },
   modalHeader: {
     flexDirection: 'row',

@@ -12,6 +12,8 @@ if (Platform.OS !== 'web') {
   if (debuggerHost) {
     const ip = debuggerHost.split(':')[0];
     API_URL = `http://${ip}:3000`;
+  } else if (Platform.OS === 'android') {
+    API_URL = 'http://10.0.2.2:3000';
   }
 }
 

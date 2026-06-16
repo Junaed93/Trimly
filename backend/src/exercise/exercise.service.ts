@@ -53,7 +53,7 @@ export class ExerciseService {
       ORDER BY id ASC
     `;
     const logs = await this.db.query(query, [userId, date]);
-    const total_calories_burned = logs.reduce((sum, log) => sum + Number(log.calories_burned), 0);
+    const total_calories_burned = logs.reduce((sum: number, log: any) => sum + Number(log.calories_burned), 0);
     return {
       logs,
       total_calories_burned

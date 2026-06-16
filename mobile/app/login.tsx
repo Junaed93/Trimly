@@ -66,6 +66,17 @@ export default function LoginScreen() {
     try {
       const res = await loginUser({ email, password });
       await saveToken(res.data.access_token);
+      
+      try {
+        const profileRes = await api.get('/auth/profile');
+        if (!profileRes.data.daily_calorie_target) {
+          router.replace('/onboarding');
+          return;
+        }
+      } catch (e) {
+        // Fallback
+      }
+      
       router.replace('/(tabs)/home');
     } catch (err: any) {
       const message = err.response?.data?.message || 'Login failed. Please try again.';
@@ -89,6 +100,17 @@ export default function LoginScreen() {
         const token = parsedUrl.queryParams?.token;
         if (token) {
            await saveToken(token as string);
+           
+           try {
+             const profileRes = await api.get('/auth/profile');
+             if (!profileRes.data.daily_calorie_target) {
+               router.replace('/onboarding');
+               return;
+             }
+           } catch (e) {
+             // Fallback
+           }
+           
            router.replace('/(tabs)/home');
         }
       }

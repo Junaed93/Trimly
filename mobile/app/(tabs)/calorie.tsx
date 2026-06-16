@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, Platform, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Platform, ScrollView, TouchableOpacity, Dimensions, Modal, TextInput, KeyboardAvoidingView, Pressable, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Icons from 'lucide-react-native';
 import { useFocusEffect } from 'expo-router';
@@ -8,7 +8,8 @@ import GlassBackground from '../../components/GlassBackground';
 import AppCard from '../../components/AppCard';
 import SectionHeader from '../../components/SectionHeader';
 import { useTheme } from '../../context/ThemeContext';
-import { getWeightLogs, getProfile } from '../../services/api';
+import Button from '../../components/Button';
+import { getWeightLogs, getProfile, logWeight } from '../../services/api';
 import { getUserStats } from '../../services/userStatsStorage';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -47,6 +48,25 @@ export default function CalorieScreen() {
   const [profile, setProfile] = useState<any>(null);
   const [userStats, setUserStats] = useState<any>({ initialWeight: null, targetWeight: null });
   const [activeTab, setActiveTab] = useState<'Week' | 'Month'>('Week');
+  
+  const [isLogModalVisible, setLogModalVisible] = useState(false);
+  const [weightInput, setWeightInput] = useState('');
+  const [isLogging, setIsLogging] = useState(false);
+
+  const handleLogWeight = async () => {
+    if (!weightInput) return;
+    setIsLogging(true);
+    try {
+      await logWeight({ weight_kg: parseFloat(weightInput), date: new Date().toISOString().split('T')[0] });
+      setLogModalVisible(false);
+      setWeightInput('');
+      fetchData();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLogging(false);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -137,12 +157,25 @@ export default function CalorieScreen() {
                 <Text style={[styles.heroLabel, { color: theme.textMuted }]}>Current Weight</Text>
                 <Text style={[styles.heroValue, { color: theme.text }]}>{currentWeight > 0 ? currentWeight.toFixed(1) : '-'} <Text style={{ fontSize: 16 }}>kg</Text></Text>
               </View>
-              <View style={[styles.badge, { backgroundColor: weightLoss >= 0 ? theme.successSurface : theme.errorSurface }]}>
+              <TouchableOpacity 
+                onPress={() => setLogModalVisible(true)} 
+                style={[styles.badge, { backgroundColor: theme.primary, paddingHorizontal: 16, paddingVertical: 12 }]}
+              >
+                <Icons.Plus size={18} color="#fff" />
+                <Text style={[styles.badgeText, { color: '#fff', marginLeft: 6 }]}>Log Weight</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 24, paddingVertical: 12, paddingHorizontal: 16, backgroundColor: theme.surface, borderRadius: 16 }}>
+              <View style={[styles.badge, { backgroundColor: weightLoss >= 0 ? theme.successSurface : theme.errorSurface, marginRight: 12 }]}>
                 <Ionicons name={weightLoss >= 0 ? "arrow-down" : "arrow-up"} size={16} color={weightLoss >= 0 ? theme.success : theme.error} />
                 <Text style={[styles.badgeText, { color: weightLoss >= 0 ? theme.success : theme.error }]}>
                   {Math.abs(weightLoss).toFixed(1)} kg
                 </Text>
               </View>
+              <Text style={{ fontSize: 14, fontWeight: '600', color: theme.textSecondary }}>
+                {weightLoss >= 0 ? 'Lost since start' : 'Gained since start'}
+              </Text>
             </View>
 
             <View style={styles.goalProgressContainer}>
@@ -153,9 +186,14 @@ export default function CalorieScreen() {
               <View style={[styles.progressBarBg, { backgroundColor: theme.surfaceRaised }]}>
                 <View style={[styles.progressBarFill, { backgroundColor: theme.primary, width: `${Math.min(100, Math.max(0, progressPercent))}%` }]} />
               </View>
-              <Text style={{ color: theme.textMuted, fontSize: 12, textAlign: 'center', marginTop: 8, fontWeight: '600' }}>
+              <Text style={{ color: theme.text, fontSize: 16, textAlign: 'center', marginTop: 12, fontWeight: '800' }}>
                 {isGoalReached ? 'Goal Reached! 🎉' : `${progressPercent.toFixed(1)}% to goal`}
               </Text>
+              {!isGoalReached && (
+                <Text style={{ color: theme.textMuted, fontSize: 13, textAlign: 'center', marginTop: 4, fontWeight: '600' }}>
+                  ({Math.abs(weightLoss).toFixed(1)} kg / {Math.abs(totalToLose).toFixed(1)} kg)
+                </Text>
+              )}
             </View>
           </AppCard>
         </Animated.View>
@@ -215,6 +253,32 @@ export default function CalorieScreen() {
             </AppCard>
           </Animated.View>
         )}
+        {/* Log Weight Modal */}
+        <Modal visible={isLogModalVisible} transparent animationType="fade">
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => { Keyboard.dismiss(); setLogModalVisible(false); }} />
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay} pointerEvents="box-none">
+            <Animated.View entering={FadeInUp} style={[styles.modalContent, { backgroundColor: theme.surfaceRaised, borderColor: theme.border }]}>
+              <Pressable style={StyleSheet.absoluteFill} onPress={Keyboard.dismiss} />
+              <Text style={[styles.modalTitle, { color: theme.text }]}>Log Today's Weight</Text>
+              
+              <View style={styles.qtyContainer}>
+                <TextInput
+                  style={[styles.qtyInput, { color: theme.text, backgroundColor: theme.surface, borderColor: theme.border }]}
+                  keyboardType="numeric"
+                  value={weightInput}
+                  onChangeText={setWeightInput}
+                  autoFocus
+                  placeholder="e.g. 70"
+                  placeholderTextColor={theme.textMuted}
+                />
+                <Text style={[styles.qtyUnit, { color: theme.textMuted }]}>kg</Text>
+              </View>
+
+              <Button title="Save Weight" onPress={handleLogWeight} loading={isLogging} />
+            </Animated.View>
+          </KeyboardAvoidingView>
+        </Modal>
+
       </ScrollView>
     </GlassBackground>
   );
@@ -359,5 +423,42 @@ const styles = StyleSheet.create({
   historyValue: {
     fontSize: 18,
     fontWeight: '800',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    padding: 24,
+    borderRadius: 32,
+    borderWidth: 1,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  qtyContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  qtyInput: {
+    fontSize: 36,
+    fontWeight: '800',
+    textAlign: 'center',
+    minWidth: 120,
+    paddingVertical: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  qtyUnit: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginLeft: 12,
   },
 });

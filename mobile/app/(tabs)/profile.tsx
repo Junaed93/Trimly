@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Switch, Platform, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Switch, Platform, Alert, Modal, TextInput, KeyboardAvoidingView, Pressable, Keyboard } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Icons from 'lucide-react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import GlassBackground from '../../components/GlassBackground';
 import AppCard from '../../components/AppCard';
 import SectionHeader from '../../components/SectionHeader';
+import Button from '../../components/Button';
 import { getProfile, removeToken, getWeightLogs } from '../../services/api';
+import { getUserStats, saveUserStats } from '../../services/userStatsStorage';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function ProfileScreen() {
@@ -15,6 +17,10 @@ export default function ProfileScreen() {
 
   const [profile, setProfile] = useState<any>(null);
   const [weightLogs, setWeightLogs] = useState<any[]>([]);
+  const [userStats, setUserStats] = useState<any>({});
+  
+  const [isGoalModalVisible, setGoalModalVisible] = useState(false);
+  const [targetWeightInput, setTargetWeightInput] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -22,12 +28,17 @@ export default function ProfileScreen() {
 
   const fetchData = async () => {
     try {
-      const [profRes, logsRes] = await Promise.all([
+      const [profRes, logsRes, stats] = await Promise.all([
         getProfile(),
-        getWeightLogs()
+        getWeightLogs(),
+        getUserStats()
       ]);
       setProfile(profRes.data);
       setWeightLogs(logsRes.data);
+      setUserStats(stats);
+      if (stats.targetWeight) {
+        setTargetWeightInput(stats.targetWeight.toString());
+      }
     } catch (e) {
       console.log('Failed to fetch profile data', e);
     }
@@ -41,6 +52,18 @@ export default function ProfileScreen() {
         router.replace('/login');
       }}
     ]);
+  };
+
+  const handleSaveGoal = async () => {
+    if (!targetWeightInput) return;
+    const val = parseFloat(targetWeightInput);
+    if (!isNaN(val)) {
+       const newStats = { ...userStats, targetWeight: val };
+       await saveUserStats(newStats);
+       setUserStats(newStats);
+    }
+    setGoalModalVisible(false);
+    Keyboard.dismiss();
   };
 
   const goalMap: any = {
@@ -67,16 +90,20 @@ export default function ProfileScreen() {
     );
   };
 
-  const renderSettingRow = (icon: any, title: string, rightElement: React.ReactNode, hideBorder = false) => {
+  const renderSettingRow = (icon: any, title: string, rightElement: React.ReactNode, hideBorder = false, onPress?: () => void) => {
     const IconComponent = (Icons as any)[icon];
     return (
-      <View style={[styles.settingRow, { borderBottomWidth: hideBorder ? 0 : StyleSheet.hairlineWidth, borderBottomColor: theme.border }]}>
+      <TouchableOpacity 
+        style={[styles.settingRow, { borderBottomWidth: hideBorder ? 0 : StyleSheet.hairlineWidth, borderBottomColor: theme.border }]}
+        disabled={!onPress}
+        onPress={onPress}
+      >
         <View style={styles.settingLeft}>
           <IconComponent size={20} color={theme.textSecondary} style={{ marginRight: 12 }} />
           <Text style={[styles.settingTitle, { color: theme.text }]}>{title}</Text>
         </View>
         {rightElement}
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -154,6 +181,14 @@ export default function ProfileScreen() {
                 trackColor={{ false: theme.border, true: theme.primary }}
               />
             ))}
+            {renderSettingRow('Target', 'Target Weight', (
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={{ color: theme.primary, fontWeight: '700', marginRight: 8 }}>
+                  {userStats?.targetWeight ? `${userStats.targetWeight} kg` : 'Set Goal'}
+                </Text>
+                <Icons.ChevronRight size={20} color={theme.textMuted} />
+              </View>
+            ), false, () => setGoalModalVisible(true))}
             {renderSettingRow('Shield', 'Privacy & Security', (
               <Icons.ChevronRight size={20} color={theme.textMuted} />
             ))}
@@ -172,6 +207,32 @@ export default function ProfileScreen() {
           <Text style={[styles.versionText, { color: theme.textMuted }]}>Trimly v1.0.0</Text>
         </Animated.View>
         
+        {/* Target Weight Modal */}
+        <Modal visible={isGoalModalVisible} transparent animationType="fade">
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => { Keyboard.dismiss(); setGoalModalVisible(false); }} />
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay} pointerEvents="box-none">
+            <Animated.View entering={FadeInUp} style={[styles.modalContent, { backgroundColor: theme.surfaceRaised, borderColor: theme.border }]}>
+              <Pressable style={StyleSheet.absoluteFill} onPress={Keyboard.dismiss} />
+              <Text style={[styles.modalTitle, { color: theme.text }]}>Set Target Weight</Text>
+              
+              <View style={styles.qtyContainer}>
+                <TextInput
+                  style={[styles.qtyInput, { color: theme.text, backgroundColor: theme.surface, borderColor: theme.border }]}
+                  keyboardType="numeric"
+                  value={targetWeightInput}
+                  onChangeText={setTargetWeightInput}
+                  autoFocus
+                  placeholder="e.g. 65"
+                  placeholderTextColor={theme.textMuted}
+                />
+                <Text style={[styles.qtyUnit, { color: theme.textMuted }]}>kg</Text>
+              </View>
+
+              <Button title="Save Goal" onPress={handleSaveGoal} />
+            </Animated.View>
+          </KeyboardAvoidingView>
+        </Modal>
+
       </ScrollView>
     </GlassBackground>
   );
@@ -310,5 +371,42 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 12,
     fontWeight: '500',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    padding: 24,
+    borderRadius: 32,
+    borderWidth: 1,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  qtyContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  qtyInput: {
+    fontSize: 36,
+    fontWeight: '800',
+    textAlign: 'center',
+    minWidth: 120,
+    paddingVertical: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  qtyUnit: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginLeft: 12,
   },
 });

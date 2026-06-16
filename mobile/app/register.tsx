@@ -103,7 +103,7 @@ export default function RegisterScreen() {
       await registerUser(form);
       const loginRes = await loginUser({ email: form.email, password: form.password });
       await saveToken(loginRes.data.access_token);
-      router.replace('/(tabs)/home');
+      router.replace('/onboarding');
     } catch (err: any) {
       const message = err.response?.data?.message || 'Registration failed. Please try again.';
       setGlobalError(Array.isArray(message) ? message[0] : message);
@@ -126,6 +126,17 @@ export default function RegisterScreen() {
         const token = parsedUrl.queryParams?.token;
         if (token) {
            await saveToken(token as string);
+           
+           try {
+             const profileRes = await api.get('/auth/profile');
+             if (!profileRes.data.daily_calorie_target) {
+               router.replace('/onboarding');
+               return;
+             }
+           } catch (e) {
+             // Fallback
+           }
+           
            router.replace('/(tabs)/home');
         }
       }

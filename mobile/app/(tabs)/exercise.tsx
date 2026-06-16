@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, Modal, Platform, KeyboardAvoidingView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, Modal, Platform, KeyboardAvoidingView, Pressable, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Icons from 'lucide-react-native';
 import { useFocusEffect } from 'expo-router';
@@ -204,8 +204,10 @@ export default function ExerciseScreen() {
       {/* DETAIL & ADD MODAL */}
       {selectedExercise && (
         <Modal transparent visible animationType="fade">
-          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => { Keyboard.dismiss(); setSelectedExercise(null); }} />
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay} pointerEvents="box-none">
             <Animated.View entering={SlideInDown.springify()} style={[styles.modalContent, { backgroundColor: theme.surfaceRaised, borderColor: theme.border }]}>
+              <Pressable style={StyleSheet.absoluteFill} onPress={Keyboard.dismiss} />
               <View style={styles.modalHeader}>
                 <Text style={[styles.modalTitle, { color: theme.text }]} numberOfLines={1}>{selectedExercise.exercise_name_en}</Text>
                 <TouchableOpacity onPress={() => setSelectedExercise(null)} style={styles.closeBtn}>
@@ -396,14 +398,13 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.7)',
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
+    padding: 20,
   },
   modalContent: {
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
+    borderRadius: 32,
     borderWidth: 1,
     padding: 24,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
   },
   modalHeader: {
     flexDirection: 'row',

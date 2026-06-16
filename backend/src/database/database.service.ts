@@ -14,6 +14,7 @@ export class DatabaseService implements OnModuleDestroy {
       database: process.env.DB_NAME || 'fittrackbd',
       waitForConnections: true,
       connectionLimit: 10,
+      dateStrings: true,
     });
   }
 
