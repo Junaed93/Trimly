@@ -54,6 +54,12 @@ export const updateProfile = (data: {
   goal: string;
 }) => api.put('/auth/profile', data);
 
+export const updateAccount = (data: {
+  name?: string;
+  email?: string;
+  password?: string;
+}) => api.put('/auth/account', data);
+
 export const logWeight = (data: { weight_kg: number; date: string }) => 
   api.post('/weight', data);
 

@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdateAccountDto } from './dto/update-account.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { ConfigService } from '@nestjs/config';
 
@@ -36,6 +37,12 @@ export class AuthController {
   @Put('profile')
   updateProfile(@Request() req: any, @Body() dto: UpdateProfileDto) {
     return this.authService.updateProfile(req.user.id, dto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('account')
+  updateAccount(@Request() req: any, @Body() dto: UpdateAccountDto) {
+    return this.authService.updateAccount(req.user.id, dto);
   }
 
   // ── Google OAuth ──

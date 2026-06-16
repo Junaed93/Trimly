@@ -139,4 +139,36 @@ export class AuthService {
     );
     return { message: 'Profile updated successfully', daily_calorie_target: dailyCalorieTarget };
   }
+
+  async updateAccount(userId: number, dto: any) {
+    if (dto.email) {
+      const existing = await this.db.query('SELECT id FROM users WHERE email = ? AND id != ?', [dto.email, userId]);
+      if (existing.length > 0) {
+        throw new ConflictException('Email already in use');
+      }
+    }
+
+    const updates: string[] = [];
+    const params: any[] = [];
+
+    if (dto.name) {
+      updates.push('name = ?');
+      params.push(dto.name);
+    }
+    if (dto.email) {
+      updates.push('email = ?');
+      params.push(dto.email);
+    }
+    if (dto.password) {
+      updates.push('password_hash = ?');
+      params.push(await bcrypt.hash(dto.password, 10));
+    }
+
+    if (updates.length > 0) {
+      params.push(userId);
+      await this.db.query(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, params);
+    }
+
+    return { message: 'Account updated successfully' };
+  }
 }

@@ -77,7 +77,20 @@ export default function CalorieScreen() {
       ]);
       setLogs(logsRes.data);
       setProfile(profileRes.data);
-      setUserStats(statsRes);
+      let stats = statsRes;
+      if (!stats.initialWeight) {
+         let inferred = 0;
+         if (logsRes.data && logsRes.data.length > 0) {
+            inferred = Number(logsRes.data[logsRes.data.length - 1].weight_kg);
+         } else if (profileRes.data && profileRes.data.weight_kg) {
+            inferred = Number(profileRes.data.weight_kg);
+         }
+         if (inferred > 0) {
+            stats = { ...stats, initialWeight: inferred };
+            import('../../services/userStatsStorage').then(m => m.saveUserStats(stats));
+         }
+      }
+      setUserStats(stats);
     } catch (error) {
       console.log('Failed to fetch weight data', error);
     }
@@ -96,7 +109,7 @@ export default function CalorieScreen() {
 
   if (logs.length > 0) {
     currentWeight = Number(logs[0].weight_kg) || 0;
-    if (!initialWeight) initialWeight = Number(logs[logs.length - 1].weight_kg) || 0;
+    if (!initialWeight) initialWeight = currentWeight;
     if (!targetWeight) {
       if (profile?.height_cm) {
         targetWeight = (profile.height_cm / 100) ** 2 * 22; 
@@ -104,6 +117,9 @@ export default function CalorieScreen() {
         targetWeight = initialWeight > 60 ? initialWeight - 10 : initialWeight;
       }
     }
+  } else if (profile?.weight_kg) {
+    currentWeight = profile.weight_kg;
+    if (!initialWeight) initialWeight = currentWeight;
   }
 
   const weightLoss = initialWeight - currentWeight;

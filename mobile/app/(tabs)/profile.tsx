@@ -7,7 +7,7 @@ import GlassBackground from '../../components/GlassBackground';
 import AppCard from '../../components/AppCard';
 import SectionHeader from '../../components/SectionHeader';
 import Button from '../../components/Button';
-import { getProfile, removeToken, getWeightLogs } from '../../services/api';
+import { getProfile, removeToken, getWeightLogs, updateAccount } from '../../services/api';
 import { getUserStats, saveUserStats } from '../../services/userStatsStorage';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -21,6 +21,15 @@ export default function ProfileScreen() {
   
   const [isGoalModalVisible, setGoalModalVisible] = useState(false);
   const [targetWeightInput, setTargetWeightInput] = useState('');
+
+  const [isInitialWeightModalVisible, setInitialWeightModalVisible] = useState(false);
+  const [initialWeightInput, setInitialWeightInput] = useState('');
+
+  const [isEditProfileModalVisible, setEditProfileModalVisible] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editPassword, setEditPassword] = useState('');
+  const [editError, setEditError] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -38,6 +47,9 @@ export default function ProfileScreen() {
       setUserStats(stats);
       if (stats.targetWeight) {
         setTargetWeightInput(stats.targetWeight.toString());
+      }
+      if (stats.initialWeight) {
+        setInitialWeightInput(stats.initialWeight.toString());
       }
     } catch (e) {
       console.log('Failed to fetch profile data', e);
@@ -64,6 +76,44 @@ export default function ProfileScreen() {
     }
     setGoalModalVisible(false);
     Keyboard.dismiss();
+  };
+
+  const handleSaveInitialWeight = async () => {
+    if (!initialWeightInput) return;
+    const val = parseFloat(initialWeightInput);
+    if (!isNaN(val)) {
+       const newStats = { ...userStats, initialWeight: val };
+       await saveUserStats(newStats);
+       setUserStats(newStats);
+    }
+    setInitialWeightModalVisible(false);
+    Keyboard.dismiss();
+  };
+
+  const handleOpenEditProfile = () => {
+    setEditName(profile?.name || '');
+    setEditEmail(profile?.email || '');
+    setEditPassword('');
+    setEditError('');
+    setEditProfileModalVisible(true);
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      const payload: any = {};
+      if (editName && editName !== profile?.name) payload.name = editName;
+      if (editEmail && editEmail !== profile?.email) payload.email = editEmail;
+      if (editPassword) payload.password = editPassword;
+
+      if (Object.keys(payload).length > 0) {
+        await updateAccount(payload);
+        fetchData();
+      }
+      setEditProfileModalVisible(false);
+      Keyboard.dismiss();
+    } catch (e: any) {
+      setEditError(e.response?.data?.message || 'Failed to update profile');
+    }
   };
 
   const goalMap: any = {
@@ -129,7 +179,7 @@ export default function ProfileScreen() {
                   <Text style={[styles.goalText, { color: theme.secondary }]}>{profile?.goal ? goalMap[profile.goal] : 'No Goal Set'}</Text>
                 </View>
               </View>
-              <TouchableOpacity style={styles.editBtn}>
+              <TouchableOpacity style={styles.editBtn} onPress={handleOpenEditProfile}>
                 <Icons.Edit2 size={20} color={theme.textSecondary} />
               </TouchableOpacity>
             </View>
@@ -181,6 +231,14 @@ export default function ProfileScreen() {
                 trackColor={{ false: theme.border, true: theme.primary }}
               />
             ))}
+            {renderSettingRow('Scale', 'Starting Weight', (
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={{ color: theme.textSecondary, fontWeight: '700', marginRight: 8 }}>
+                  {userStats?.initialWeight ? `${userStats.initialWeight} kg` : 'Set Weight'}
+                </Text>
+                <Icons.ChevronRight size={20} color={theme.textMuted} />
+              </View>
+            ), false, () => setInitialWeightModalVisible(true))}
             {renderSettingRow('Target', 'Target Weight', (
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={{ color: theme.primary, fontWeight: '700', marginRight: 8 }}>
@@ -229,6 +287,79 @@ export default function ProfileScreen() {
               </View>
 
               <Button title="Save Goal" onPress={handleSaveGoal} />
+            </Animated.View>
+          </KeyboardAvoidingView>
+        </Modal>
+
+        {/* Initial Weight Modal */}
+        <Modal visible={isInitialWeightModalVisible} transparent animationType="fade">
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => { Keyboard.dismiss(); setInitialWeightModalVisible(false); }} />
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay} pointerEvents="box-none">
+            <Animated.View entering={FadeInUp} style={[styles.modalContent, { backgroundColor: theme.surfaceRaised, borderColor: theme.border }]}>
+              <Pressable style={StyleSheet.absoluteFill} onPress={Keyboard.dismiss} />
+              <Text style={[styles.modalTitle, { color: theme.text }]}>Set Starting Weight</Text>
+              
+              <View style={styles.qtyContainer}>
+                <TextInput
+                  style={[styles.qtyInput, { color: theme.text, backgroundColor: theme.surface, borderColor: theme.border }]}
+                  keyboardType="numeric"
+                  value={initialWeightInput}
+                  onChangeText={setInitialWeightInput}
+                  autoFocus
+                  placeholder="e.g. 70"
+                  placeholderTextColor={theme.textMuted}
+                />
+                <Text style={[styles.qtyUnit, { color: theme.textMuted }]}>kg</Text>
+              </View>
+
+              <Button title="Save Weight" onPress={handleSaveInitialWeight} />
+            </Animated.View>
+          </KeyboardAvoidingView>
+        </Modal>
+
+        {/* Edit Profile Modal */}
+        <Modal visible={isEditProfileModalVisible} transparent animationType="fade">
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => { Keyboard.dismiss(); setEditProfileModalVisible(false); }} />
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay} pointerEvents="box-none">
+            <Animated.View entering={FadeInUp} style={[styles.modalContent, { backgroundColor: theme.surfaceRaised, borderColor: theme.border }]}>
+              <Pressable style={StyleSheet.absoluteFill} onPress={Keyboard.dismiss} />
+              <Text style={[styles.modalTitle, { color: theme.text }]}>Edit Profile</Text>
+
+              {editError ? (
+                <Text style={{ color: theme.error, marginBottom: 16, textAlign: 'center', fontWeight: '500' }}>{editError}</Text>
+              ) : null}
+              
+              <Text style={[styles.inputLabel, { color: theme.textMuted }]}>Name</Text>
+              <TextInput
+                style={[styles.textInput, { color: theme.text, backgroundColor: theme.surface, borderColor: theme.border }]}
+                value={editName}
+                onChangeText={setEditName}
+                placeholder="Name"
+                placeholderTextColor={theme.textMuted}
+              />
+
+              <Text style={[styles.inputLabel, { color: theme.textMuted }]}>Email</Text>
+              <TextInput
+                style={[styles.textInput, { color: theme.text, backgroundColor: theme.surface, borderColor: theme.border }]}
+                value={editEmail}
+                onChangeText={setEditEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                placeholder="Email"
+                placeholderTextColor={theme.textMuted}
+              />
+
+              <Text style={[styles.inputLabel, { color: theme.textMuted }]}>New Password (Optional)</Text>
+              <TextInput
+                style={[styles.textInput, { color: theme.text, backgroundColor: theme.surface, borderColor: theme.border }]}
+                value={editPassword}
+                onChangeText={setEditPassword}
+                secureTextEntry
+                placeholder="Enter new password"
+                placeholderTextColor={theme.textMuted}
+              />
+
+              <Button title="Save Changes" onPress={handleSaveProfile} />
             </Animated.View>
           </KeyboardAvoidingView>
         </Modal>
@@ -408,5 +539,19 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     marginLeft: 12,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+    marginLeft: 4,
+  },
+  textInput: {
+    fontSize: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginBottom: 16,
   },
 });
