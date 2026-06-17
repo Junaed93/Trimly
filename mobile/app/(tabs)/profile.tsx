@@ -7,7 +7,7 @@ import GlassBackground from '../../components/GlassBackground';
 import AppCard from '../../components/AppCard';
 import SectionHeader from '../../components/SectionHeader';
 import Button from '../../components/Button';
-import { getProfile, removeToken, getWeightLogs, updateAccount } from '../../services/api';
+import { getProfile, removeToken, getWeightLogs, updateAccount, getUserAwards } from '../../services/api';
 import { getUserStats, saveUserStats } from '../../services/userStatsStorage';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -18,6 +18,7 @@ export default function ProfileScreen() {
   const [profile, setProfile] = useState<any>(null);
   const [weightLogs, setWeightLogs] = useState<any[]>([]);
   const [userStats, setUserStats] = useState<any>({});
+  const [earnedAwards, setEarnedAwards] = useState<any[]>([]);
   
   const [isGoalModalVisible, setGoalModalVisible] = useState(false);
   const [targetWeightInput, setTargetWeightInput] = useState('');
@@ -37,14 +38,16 @@ export default function ProfileScreen() {
 
   const fetchData = async () => {
     try {
-      const [profRes, logsRes, stats] = await Promise.all([
+      const [profRes, logsRes, stats, awardsRes] = await Promise.all([
         getProfile(),
         getWeightLogs(),
-        getUserStats()
+        getUserStats(),
+        getUserAwards(),
       ]);
       setProfile(profRes.data);
       setWeightLogs(logsRes.data);
       setUserStats(stats);
+      setEarnedAwards(awardsRes.data || []);
       if (stats.targetWeight) {
         setTargetWeightInput(stats.targetWeight.toString());
       }
@@ -129,13 +132,19 @@ export default function ProfileScreen() {
   };
 
   const renderAchievement = (icon: any, title: string, unlocked: boolean, color: string) => {
-    const IconComponent = (Icons as any)[icon];
+    let IconComponent = Icons.Award;
+    try {
+      if (icon && (Icons as any)[icon]) {
+        IconComponent = (Icons as any)[icon];
+      }
+    } catch(e) {}
+    
     return (
       <View style={[styles.achievementItem, { backgroundColor: unlocked ? theme.surfaceRaised : theme.surface, borderColor: theme.border, opacity: unlocked ? 1 : 0.5 }]}>
         <View style={[styles.achievementIcon, { backgroundColor: unlocked ? color + '20' : theme.border }]}>
           <IconComponent size={24} color={unlocked ? color : theme.textMuted} />
         </View>
-        <Text style={[styles.achievementTitle, { color: theme.text }]} numberOfLines={2} textAlign="center">{title}</Text>
+        <Text style={[styles.achievementTitle, { color: theme.text, textAlign: 'center' }]} numberOfLines={2}>{title}</Text>
       </View>
     );
   };
@@ -204,12 +213,19 @@ export default function ProfileScreen() {
 
         {/* Achievements */}
         <Animated.View entering={FadeInUp.delay(300)} style={{ marginTop: 32 }}>
-          <SectionHeader title="Achievements" actionText="View All" />
+          <SectionHeader title="Achievements" actionText="View All" onActionPress={() => router.push('/awards')} />
           <View style={styles.achievementsGrid}>
-            {renderAchievement('Award', 'First Log', true, '#F59E0B')}
-            {renderAchievement('Flame', '7 Day Streak', weightLogs.length >= 7, theme.error)}
-            {renderAchievement('Star', '30 Day Streak', weightLogs.length >= 30, theme.secondary)}
-            {renderAchievement('Target', 'Goal Reached', false, theme.success)}
+            {earnedAwards.slice(0, 4).map((award, idx) => {
+              const colors = ['#F59E0B', theme.error, theme.secondary, theme.success];
+              return (
+                <View key={award.id} style={{ width: '48%' }}>
+                  {renderAchievement('Award', award.name, true, colors[idx % colors.length])}
+                </View>
+              );
+            })}
+            {earnedAwards.length === 0 && (
+              <Text style={{ color: theme.textMuted, width: '100%', textAlign: 'center', marginVertical: 20 }}>No awards earned yet.</Text>
+            )}
           </View>
         </Animated.View>
 

@@ -13,7 +13,7 @@ export class AwardController {
   }
 
   @Get('user')
-  async getUserAwards(@Request() req) {
+  async getUserAwards(@Request() req: any) {
     return this.awardService.getUserAwards(req.user.id);
   }
 }
