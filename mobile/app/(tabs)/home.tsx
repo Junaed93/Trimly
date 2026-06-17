@@ -25,22 +25,27 @@ export default function HomeScreen() {
   const [consumedCalories, setConsumedCalories] = useState(0);
   const [burnedCalories, setBurnedCalories] = useState(0);
   const [foodLogs, setFoodLogs] = useState<FoodLog[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const fetchDashboardData = async () => {
     try {
       const today = getTodayString();
-      const [logsRes, profileRes, cals, exerciseData, dailyFood] = await Promise.all([
+      const [logsRes, profileRes, cals, exerciseData, dailyFood, notificationsRes] = await Promise.all([
         getWeightLogs(),
         getProfile(),
         getDailyCalories(today),
         getDailyExerciseLogs(),
-        getDailyFoodLogs(today)
+        getDailyFoodLogs(today),
+        import('../../services/api').then(m => m.getNotifications())
       ]);
       setLogs(logsRes.data);
       setProfile(profileRes.data);
       setConsumedCalories(cals);
       setBurnedCalories(exerciseData.total_calories_burned);
       setFoodLogs(dailyFood);
+      
+      const unread = (notificationsRes.data || []).filter((n: any) => !n.is_read).length;
+      setUnreadCount(unread);
     } catch (error) {
       console.log('Failed to fetch dashboard data', error);
     } finally {
@@ -104,11 +109,25 @@ export default function HomeScreen() {
             <Text style={[styles.title, { color: theme.text }]}>{profile?.name || 'User'}</Text>
             <Text style={[styles.subtitle, { color: theme.primary }]}>Goal: {currentGoal}</Text>
           </View>
-          <View style={[styles.streakBadge, { backgroundColor: 'rgba(255, 165, 0, 0.1)', borderColor: 'rgba(255, 165, 0, 0.3)' }]}>
-            <Text style={{ fontSize: 20 }}>🔥</Text>
-            <View style={{ marginLeft: 6 }}>
-              <Text style={{ color: '#FFA500', fontWeight: '800', fontSize: 16 }}>{logs.length > 0 ? logs.length : 1}</Text>
-              <Text style={{ color: theme.textMuted, fontSize: 10, fontWeight: '700', textTransform: 'uppercase' }}>Day Streak</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <TouchableOpacity 
+              style={[styles.notificationBtn, { backgroundColor: theme.surface, borderColor: theme.border }]} 
+              onPress={() => router.push('/notifications')}
+            >
+              <Icons.Bell size={20} color={theme.textSecondary} />
+              {unreadCount > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            <View style={[styles.streakBadge, { backgroundColor: 'rgba(255, 165, 0, 0.1)', borderColor: 'rgba(255, 165, 0, 0.3)' }]}>
+              <Text style={{ fontSize: 20 }}>🔥</Text>
+              <View style={{ marginLeft: 6 }}>
+                <Text style={{ color: '#FFA500', fontWeight: '800', fontSize: 16 }}>{logs.length > 0 ? logs.length : 1}</Text>
+                <Text style={{ color: theme.textMuted, fontSize: 10, fontWeight: '700', textTransform: 'uppercase' }}>Streak</Text>
+              </View>
             </View>
           </View>
         </Animated.View>
@@ -167,6 +186,39 @@ export default function HomeScreen() {
                   <Text style={[styles.quickActionLabel, { color: theme.text }]}>{action.label}</Text>
                 </TouchableOpacity>
               ))}
+            </Animated.View>
+
+            {/* Daily Macros */}
+            <Animated.View entering={FadeInUp.delay(350).springify()} style={{ marginTop: 24 }}>
+              <SectionHeader title="Daily Macros" />
+              <AppCard variant="glass" padding={16}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <View style={{ alignItems: 'center', flex: 1 }}>
+                    <Text style={{ fontSize: 22, fontWeight: '800', color: theme.primary }}>
+                      {Math.round(foodLogs.reduce((sum, item) => sum + (Number(item.protein_g) || 0), 0))}g
+                    </Text>
+                    <Text style={{ fontSize: 12, fontWeight: '600', color: theme.textMuted, marginTop: 4, textTransform: 'uppercase' }}>Protein</Text>
+                  </View>
+                  
+                  <View style={{ width: 1, height: 40, backgroundColor: theme.border }} />
+
+                  <View style={{ alignItems: 'center', flex: 1 }}>
+                    <Text style={{ fontSize: 22, fontWeight: '800', color: theme.secondary }}>
+                      {Math.round(foodLogs.reduce((sum, item) => sum + (Number(item.carbs_g) || 0), 0))}g
+                    </Text>
+                    <Text style={{ fontSize: 12, fontWeight: '600', color: theme.textMuted, marginTop: 4, textTransform: 'uppercase' }}>Carbs</Text>
+                  </View>
+
+                  <View style={{ width: 1, height: 40, backgroundColor: theme.border }} />
+
+                  <View style={{ alignItems: 'center', flex: 1 }}>
+                    <Text style={{ fontSize: 22, fontWeight: '800', color: theme.warning }}>
+                      {Math.round(foodLogs.reduce((sum, item) => sum + (Number(item.fat_g) || 0), 0))}g
+                    </Text>
+                    <Text style={{ fontSize: 12, fontWeight: '600', color: theme.textMuted, marginTop: 4, textTransform: 'uppercase' }}>Fat</Text>
+                  </View>
+                </View>
+              </AppCard>
             </Animated.View>
 
             {/* Daily Overview */}
@@ -246,6 +298,34 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
+  },
+  notificationBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  badge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    backgroundColor: '#EF4444',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: '#FFF',
+    fontSize: 9,
+    fontWeight: '900',
   },
   heroCard: {
     marginBottom: 24,

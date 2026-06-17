@@ -270,8 +270,13 @@ export default function FoodScreen() {
                       logs.map(log => (
                         <View key={log.id} style={[styles.logRow, { borderTopColor: theme.border }]}>
                           <View style={{ flex: 1 }}>
-                            <Text style={[styles.logName, { color: theme.text }]}>{log.foodName}</Text>
+                            <Text style={[styles.logName, { color: theme.text }]}>{log.food_name || log.foodName}</Text>
                             <Text style={[styles.logQty, { color: theme.textMuted }]}>{log.quantity} {log.unit}</Text>
+                            <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+                              <Text style={{ fontSize: 11, color: theme.primary, fontWeight: '600' }}>P: {log.protein_g || 0}g</Text>
+                              <Text style={{ fontSize: 11, color: theme.secondary, fontWeight: '600' }}>C: {log.carbs_g || 0}g</Text>
+                              <Text style={{ fontSize: 11, color: theme.warning, fontWeight: '600' }}>F: {log.fat_g || 0}g</Text>
+                            </View>
                           </View>
                           <Text style={[styles.logCalsValue, { color: theme.textSecondary }]}>{log.calories} kcal</Text>
                         </View>
