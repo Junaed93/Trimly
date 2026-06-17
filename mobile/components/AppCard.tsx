@@ -10,14 +10,14 @@ interface AppCardProps {
 }
 
 export default function AppCard({ children, style, variant = 'glass', padding = 20 }: AppCardProps) {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
 
   const getVariantStyles = () => {
     switch (variant) {
       case 'glass':
         return {
-          backgroundColor: 'rgba(255, 255, 255, 0.03)',
-          borderColor: 'rgba(255, 255, 255, 0.08)',
+          backgroundColor: isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(255, 255, 255, 0.4)',
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.6)',
           borderWidth: 1,
         };
       case 'elevated':
@@ -26,10 +26,10 @@ export default function AppCard({ children, style, variant = 'glass', padding = 
           borderColor: theme.border,
           borderWidth: 1,
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: 8 },
-          shadowOpacity: 0.3,
-          shadowRadius: 12,
-          elevation: 8,
+          shadowOffset: { width: 0, height: 12 },
+          shadowOpacity: isDark ? 0.4 : 0.08,
+          shadowRadius: 16,
+          elevation: 10,
         };
       case 'flat':
       default:

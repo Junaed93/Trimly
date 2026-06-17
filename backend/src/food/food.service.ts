@@ -33,12 +33,37 @@ export class FoodService {
     const result = await this.db.query(query, params);
 
     // Check for awards
-    const logsCountResult = await this.db.query(
-      'SELECT COUNT(*) as count FROM daily_food_logs WHERE user_id = ?',
+    const datesResult = await this.db.query(
+      'SELECT DISTINCT DATE(date) as date FROM daily_food_logs WHERE user_id = ? ORDER BY date DESC',
       [userId]
     );
-    const logCount = logsCountResult[0].count;
+    const logsResult = await this.db.query('SELECT COUNT(*) as count, SUM(calories) as totalCalories FROM daily_food_logs WHERE user_id = ?', [userId]);
+    const logCount = logsResult[0].count;
+    const totalCalories = logsResult[0].totalCalories || 0;
+
+    let streak = 0;
+    let lastDate = new Date();
+    lastDate.setHours(0,0,0,0);
+    
+    for (let i = 0; i < datesResult.length; i++) {
+      const logDate = new Date(datesResult[i].date);
+      logDate.setHours(0,0,0,0);
+      const diffDays = Math.floor((lastDate.getTime() - logDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (i === 0 && diffDays > 1) {
+         streak = 1; break;
+      } else if (i === 0) {
+         streak = 1; lastDate = logDate;
+      } else {
+         if (diffDays === 1) {
+            streak++; lastDate = logDate;
+         } else break;
+      }
+    }
+
     await this.awardService.checkAndGrantAward(userId, 'MEAL_LOG', logCount);
+    await this.awardService.checkAndGrantAward(userId, 'MEAL_STREAK', streak);
+    await this.awardService.checkAndGrantAward(userId, 'CALORIES_TRACKED', totalCalories);
 
     return { id: result.insertId, ...logData };
   }

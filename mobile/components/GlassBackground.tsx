@@ -39,16 +39,16 @@ export default function GlassBackground({ children }: { children: React.ReactNod
         ) : Platform.OS !== 'web' ? (
           <BlurView intensity={isDark ? 100 : 80} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
         ) : (
-          <View style={[StyleSheet.absoluteFillObject, { backgroundColor: isDark ? 'rgba(0,0,0,0.82)' : 'rgba(255,255,255,0.68)' } as any]} />
+          <View style={[StyleSheet.absoluteFillObject, { backgroundColor: isDark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.75)' } as any]} />
         )}
 
         <LinearGradient
           colors={[
-            isDark ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.4)',
-            'rgba(255,255,255,0.03)',
-            isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.1)'
+            isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.8)',
+            isDark ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.3)',
+            isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.5)'
           ]}
-          locations={[0, 0.55, 1]}
+          locations={[0, 0.5, 1]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={StyleSheet.absoluteFillObject}

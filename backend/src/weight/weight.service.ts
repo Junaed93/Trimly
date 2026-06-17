@@ -27,16 +27,42 @@ export class WeightService {
       );
 
       // 3. Check for awards
-      // Get weight streak length (simple implementation: count total distinct weight logs)
-      // A proper streak would check consecutive days, but for MVP we use total logs
-      const streakResult = await this.db.query(
-        'SELECT COUNT(DISTINCT recorded_at) as count FROM weight_logs WHERE user_id = ?',
+      // Get weight streak and log count
+      const datesResult = await this.db.query(
+        'SELECT DISTINCT DATE(recorded_at) as date FROM weight_logs WHERE user_id = ? ORDER BY date DESC',
         [userId]
       );
-      const logCount = streakResult[0].count;
+      const logCount = datesResult.length;
+      
+      let streak = 0;
+      let lastDate = new Date();
+      lastDate.setHours(0,0,0,0);
+      
+      for (let i = 0; i < datesResult.length; i++) {
+        const logDate = new Date(datesResult[i].date);
+        logDate.setHours(0,0,0,0);
+        
+        const diffDays = Math.floor((lastDate.getTime() - logDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        if (i === 0 && diffDays > 1) {
+           streak = 1; 
+           break;
+        } else if (i === 0) {
+           streak = 1;
+           lastDate = logDate;
+        } else {
+           if (diffDays === 1) {
+              streak++;
+              lastDate = logDate;
+           } else {
+              break;
+           }
+        }
+      }
 
       await this.awardService.checkAndGrantAward(userId, 'WEIGHT_LOG', logCount);
-      await this.awardService.checkAndGrantAward(userId, 'WEIGHT_STREAK', logCount);
+      await this.awardService.checkAndGrantAward(userId, 'WEIGHT_STREAK', streak);
+
 
       return { message: 'Weight logged successfully' };
     } catch (error) {

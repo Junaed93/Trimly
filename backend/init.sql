@@ -72,11 +72,51 @@ CREATE TABLE IF NOT EXISTS awards (
 );
 
 INSERT INTO awards (name, description, icon, requirement_type, requirement_value) VALUES
-  ('First Step', 'Logged weight for the first time.', 'scale', 'WEIGHT_LOG', 1),
-  ('Consistent Weigher', 'Logged weight for 7 consecutive days.', 'flame', 'WEIGHT_STREAK', 7),
-  ('First Meal', 'Logged food for the first time.', 'restaurant', 'MEAL_LOG', 1),
-  ('Active Logger', 'Logged an exercise.', 'barbell', 'EXERCISE_LOG', 1)
-ON DUPLICATE KEY UPDATE id=id;
+  ('First Step', 'Logged weight for the first time.', 'Scale', 'WEIGHT_LOG', 1),
+  ('Consistent Weigher', 'Logged weight for 7 consecutive days.', 'Flame', 'WEIGHT_STREAK', 7),
+  ('Weight Tracker Silver', 'Logged weight 14 times.', 'Scale', 'WEIGHT_LOG', 14),
+  ('Weight Tracker Gold', 'Logged weight 30 times.', 'Scale', 'WEIGHT_LOG', 30),
+  ('Weight Tracker Platinum', 'Logged weight 60 times.', 'Award', 'WEIGHT_LOG', 60),
+  ('Weight Tracker Diamond', 'Logged weight 100 times.', 'Trophy', 'WEIGHT_LOG', 100),
+  ('Streak Master Bronze', 'Maintained a 14-day weight streak.', 'Flame', 'WEIGHT_STREAK', 14),
+  ('Streak Master Silver', 'Maintained a 30-day weight streak.', 'Flame', 'WEIGHT_STREAK', 30),
+  ('Streak Master Gold', 'Maintained a 60-day weight streak.', 'Flame', 'WEIGHT_STREAK', 60),
+  ('Streak Master Platinum', 'Maintained a 100-day weight streak.', 'Zap', 'WEIGHT_STREAK', 100),
+
+  ('First Meal', 'Logged food for the first time.', 'Utensils', 'MEAL_LOG', 1),
+  ('Foodie Bronze', 'Logged 10 meals.', 'Utensils', 'MEAL_LOG', 10),
+  ('Foodie Silver', 'Logged 50 meals.', 'Utensils', 'MEAL_LOG', 50),
+  ('Foodie Gold', 'Logged 100 meals.', 'Utensils', 'MEAL_LOG', 100),
+  ('Foodie Platinum', 'Logged 365 meals.', 'Star', 'MEAL_LOG', 365),
+  ('Diet Streak Bronze', 'Logged food for 7 consecutive days.', 'Flame', 'MEAL_STREAK', 7),
+  ('Diet Streak Silver', 'Logged food for 14 consecutive days.', 'Flame', 'MEAL_STREAK', 14),
+  ('Diet Streak Gold', 'Logged food for 30 consecutive days.', 'Flame', 'MEAL_STREAK', 30),
+  ('Diet Streak Platinum', 'Logged food for 60 consecutive days.', 'Zap', 'MEAL_STREAK', 60),
+
+  ('Active Logger', 'Logged an exercise.', 'Dumbbell', 'EXERCISE_LOG', 1),
+  ('Workout Bronze', 'Logged 10 workouts.', 'Dumbbell', 'EXERCISE_LOG', 10),
+  ('Workout Silver', 'Logged 50 workouts.', 'Dumbbell', 'EXERCISE_LOG', 50),
+  ('Workout Gold', 'Logged 100 workouts.', 'Dumbbell', 'EXERCISE_LOG', 100),
+  ('Workout Platinum', 'Logged 365 workouts.', 'Star', 'EXERCISE_LOG', 365),
+  ('Exercise Streak Bronze', 'Worked out for 7 consecutive days.', 'Flame', 'EXERCISE_STREAK', 7),
+  ('Exercise Streak Silver', 'Worked out for 14 consecutive days.', 'Flame', 'EXERCISE_STREAK', 14),
+  ('Exercise Streak Gold', 'Worked out for 30 consecutive days.', 'Flame', 'EXERCISE_STREAK', 30),
+
+  ('Calorie Burner Bronze', 'Burned 1,000 total calories.', 'Activity', 'CALORIES_BURNED', 1000),
+  ('Calorie Burner Silver', 'Burned 5,000 total calories.', 'Activity', 'CALORIES_BURNED', 5000),
+  ('Calorie Burner Gold', 'Burned 10,000 total calories.', 'Activity', 'CALORIES_BURNED', 10000),
+  ('Calorie Burner Platinum', 'Burned 50,000 total calories.', 'Zap', 'CALORIES_BURNED', 50000),
+  ('Calorie Burner Diamond', 'Burned 100,000 total calories.', 'Trophy', 'CALORIES_BURNED', 100000),
+
+  ('Nutritionist Bronze', 'Tracked 1,000 calories eaten.', 'Apple', 'CALORIES_TRACKED', 1000),
+  ('Nutritionist Silver', 'Tracked 10,000 calories eaten.', 'Apple', 'CALORIES_TRACKED', 10000),
+  ('Nutritionist Gold', 'Tracked 50,000 calories eaten.', 'Apple', 'CALORIES_TRACKED', 50000),
+  ('Nutritionist Platinum', 'Tracked 100,000 calories eaten.', 'Star', 'CALORIES_TRACKED', 100000),
+  ('Nutritionist Diamond', 'Tracked 500,000 calories eaten.', 'Trophy', 'CALORIES_TRACKED', 500000),
+
+  ('Goal Setter', 'Set your first weight goal.', 'Target', 'FIRST_GOAL', 1),
+  ('Profile Complete', 'Updated your profile info.', 'User', 'PROFILE_UPDATE', 1)
+ON DUPLICATE KEY UPDATE requirement_value=VALUES(requirement_value), icon=VALUES(icon);
 
 CREATE TABLE IF NOT EXISTS user_awards (
   id INT AUTO_INCREMENT PRIMARY KEY,

@@ -44,76 +44,76 @@ export interface Theme {
 // ─── Dark Theme ──────────────────────────────────────────────────────────────
 export const darkTheme: Theme = {
   isDark: true,
-  bg: '#0B0F14',
-  bgSecondary: '#111720',
-  surface: '#151C26',
-  surfaceRaised: '#1E2734',
-  border: '#202936',
-  borderStrong: '#2C3A4A',
-  text: '#F8FAFC',
-  textSecondary: '#94A3B8',
-  textMuted: '#64748B',
-  textPlaceholder: '#475569',
+  bg: '#000000',
+  bgSecondary: '#0C0C0C',
+  surface: '#121212',
+  surfaceRaised: '#1C1C1E',
+  border: '#2C2C2E',
+  borderStrong: '#3A3A3C',
+  text: '#FFFFFF',
+  textSecondary: '#EBEBF5',
+  textMuted: '#8E8E93',
+  textPlaceholder: '#636366',
   
-  primary: '#10B981', // Emerald
-  primaryLight: '#34D399',
-  primarySurface: 'rgba(16,185,129,0.12)',
-  primaryBorder: 'rgba(16,185,129,0.4)',
+  primary: '#32D74B', // iOS System Green
+  primaryLight: '#30D158',
+  primarySurface: 'rgba(50,215,75,0.12)',
+  primaryBorder: 'rgba(50,215,75,0.4)',
   
-  secondary: '#8B5CF6', // Purple
-  secondaryLight: '#A78BFA',
+  secondary: '#0A84FF', // iOS System Blue
+  secondaryLight: '#5E5CE6', // iOS System Indigo
   
-  accent: '#10B981', // Mapped to primary
-  accentLight: '#34D399',
-  accentSurface: 'rgba(16,185,129,0.12)',
-  accentBorder: 'rgba(16,185,129,0.4)',
+  accent: '#32D74B', 
+  accentLight: '#30D158',
+  accentSurface: 'rgba(50,215,75,0.12)',
+  accentBorder: 'rgba(50,215,75,0.4)',
   
-  error: '#EF4444',
-  errorSurface: 'rgba(239,68,68,0.12)',
-  errorBorder: 'rgba(239,68,68,0.3)',
-  success: '#10B981',
-  successSurface: 'rgba(16,185,129,0.12)',
-  warning: '#F59E0B',
+  error: '#FF453A', // iOS System Red
+  errorSurface: 'rgba(255,69,58,0.12)',
+  errorBorder: 'rgba(255,69,58,0.3)',
+  success: '#32D74B',
+  successSurface: 'rgba(50,215,75,0.12)',
+  warning: '#FF9F0A', // iOS System Orange
   
-  navBg: '#0B0F14',
-  navBorder: '#202936',
+  navBg: '#000000',
+  navBorder: '#2C2C2E',
 };
 
 // ─── Light Theme ─────────────────────────────────────────────────────────────
 export const lightTheme: Theme = {
   isDark: false,
-  bg: '#f8fafc',
-  bgSecondary: '#f1f5f9',
-  surface: '#ffffff',
-  surfaceRaised: '#f8fafc',
-  border: '#e2e8f0',
-  borderStrong: '#cbd5e1',
-  text: '#0f172a',
-  textSecondary: '#475569',
-  textMuted: '#94a3b8',
-  textPlaceholder: '#94a3b8',
+  bg: '#F2F2F7',
+  bgSecondary: '#FFFFFF',
+  surface: '#FFFFFF',
+  surfaceRaised: '#F2F2F7',
+  border: '#E5E5EA',
+  borderStrong: '#D1D1D6',
+  text: '#000000',
+  textSecondary: '#3C3C43',
+  textMuted: '#8E8E93',
+  textPlaceholder: '#C7C7CC',
   
-  primary: '#10B981',
-  primaryLight: '#059669',
-  primarySurface: 'rgba(16,185,129,0.08)',
-  primaryBorder: 'rgba(16,185,129,0.3)',
+  primary: '#34C759', // iOS System Green Light
+  primaryLight: '#28CD41',
+  primarySurface: 'rgba(52,199,89,0.08)',
+  primaryBorder: 'rgba(52,199,89,0.3)',
   
-  secondary: '#8B5CF6',
-  secondaryLight: '#7C3AED',
+  secondary: '#007AFF', // iOS System Blue Light
+  secondaryLight: '#5856D6', // iOS System Indigo Light
   
-  accent: '#10B981',
-  accentLight: '#059669',
-  accentSurface: 'rgba(16,185,129,0.08)',
-  accentBorder: 'rgba(16,185,129,0.3)',
+  accent: '#34C759',
+  accentLight: '#28CD41',
+  accentSurface: 'rgba(52,199,89,0.08)',
+  accentBorder: 'rgba(52,199,89,0.3)',
   
-  error: '#dc2626',
-  errorSurface: 'rgba(220,38,38,0.06)',
-  errorBorder: 'rgba(220,38,38,0.2)',
-  success: '#16a34a',
-  successSurface: 'rgba(22,163,74,0.08)',
-  warning: '#d97706',
-  navBg: '#ffffff',
-  navBorder: '#e2e8f0',
+  error: '#FF3B30',
+  errorSurface: 'rgba(255,59,48,0.08)',
+  errorBorder: 'rgba(255,59,48,0.2)',
+  success: '#34C759',
+  successSurface: 'rgba(52,199,89,0.08)',
+  warning: '#FF9500',
+  navBg: '#FFFFFF',
+  navBorder: '#E5E5EA',
 };
 
 // ─── Context ─────────────────────────────────────────────────────────────────
