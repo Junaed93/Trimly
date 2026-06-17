@@ -61,3 +61,40 @@ CREATE TABLE IF NOT EXISTS exercise_logs (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS awards (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  icon VARCHAR(50),
+  requirement_type VARCHAR(50),
+  requirement_value INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO awards (name, description, icon, requirement_type, requirement_value) VALUES
+  ('First Step', 'Logged weight for the first time.', 'scale', 'WEIGHT_LOG', 1),
+  ('Consistent Weigher', 'Logged weight for 7 consecutive days.', 'flame', 'WEIGHT_STREAK', 7),
+  ('First Meal', 'Logged food for the first time.', 'restaurant', 'MEAL_LOG', 1),
+  ('Active Logger', 'Logged an exercise.', 'barbell', 'EXERCISE_LOG', 1)
+ON DUPLICATE KEY UPDATE id=id;
+
+CREATE TABLE IF NOT EXISTS user_awards (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  award_id INT NOT NULL,
+  earned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (award_id) REFERENCES awards(id) ON DELETE CASCADE,
+  UNIQUE KEY unique_user_award (user_id, award_id)
+);
+
+CREATE TABLE IF NOT EXISTS notifications (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  type VARCHAR(50) NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  message TEXT,
+  is_read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);

@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
+import { AwardService } from '../award/award.service';
 
 @Injectable()
 export class FoodService {
-  constructor(private db: DatabaseService) {}
+  constructor(
+    private db: DatabaseService,
+    private awardService: AwardService,
+  ) {}
 
   async createLog(userId: number, logData: any) {
     const query = `
@@ -25,7 +29,17 @@ export class FoodService {
       logData.time,
     ];
     
+    
     const result = await this.db.query(query, params);
+
+    // Check for awards
+    const logsCountResult = await this.db.query(
+      'SELECT COUNT(*) as count FROM daily_food_logs WHERE user_id = ?',
+      [userId]
+    );
+    const logCount = logsCountResult[0].count;
+    await this.awardService.checkAndGrantAward(userId, 'MEAL_LOG', logCount);
+
     return { id: result.insertId, ...logData };
   }
 

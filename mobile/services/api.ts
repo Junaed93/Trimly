@@ -65,6 +65,12 @@ export const logWeight = (data: { weight_kg: number; date: string }) =>
 
 export const getWeightLogs = () => api.get('/weight');
 
+export const getAwards = () => api.get('/awards');
+export const getUserAwards = () => api.get('/awards/user');
+
+export const getNotifications = () => api.get('/notifications');
+export const markNotificationRead = (id: number) => api.post(`/notifications/${id}/read`);
+export const markAllNotificationsRead = () => api.post('/notifications/read-all');
 export const saveToken = (token: string) =>
   AsyncStorage.setItem('token', token);
 

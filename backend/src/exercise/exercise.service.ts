@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
+import { AwardService } from '../award/award.service';
 
 @Injectable()
 export class ExerciseService {
-  constructor(private db: DatabaseService) {}
+  constructor(
+    private db: DatabaseService,
+    private awardService: AwardService,
+  ) {}
 
   async createLog(userId: number, logData: any) {
     const query = `
@@ -43,6 +47,15 @@ export class ExerciseService {
     ];
     
     const result = await this.db.query(actualQuery, actualParams);
+    
+    // Check for awards
+    const logsCountResult = await this.db.query(
+      'SELECT COUNT(*) as count FROM exercise_logs WHERE user_id = ?',
+      [userId]
+    );
+    const logCount = logsCountResult[0].count;
+    await this.awardService.checkAndGrantAward(userId, 'EXERCISE_LOG', logCount);
+
     return { calories_burned: logData.calories_burned || 0 };
   }
 
